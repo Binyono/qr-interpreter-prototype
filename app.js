@@ -35,7 +35,8 @@
   const TEXTS = {
     en: {
       langTitle: 'Choose your language', langSub: 'Tap a language to start',
-      langNote: 'Captions start right away. You can change this later.',
+      langNote: 'Tap a language and captions and sound start right away. You can change it later.',
+      iosMuteNote: '※On iPhone, turn off the silent switch (side switch) to hear the sound.',
       voiceEnable: '🔈 Turn on sound', voiceOn: '🔊 Sound ON', voiceOff: '🔇 Sound OFF',
       rate: 'Speed', font: 'Text size', jump: 'Latest ↓',
       displayBoth: 'Translation + original', displayTr: 'Translation only', displayOrig: 'Original only',
@@ -46,7 +47,7 @@
       waitStart: 'Waiting for the guide to start…', waitLang: 'Waiting for captions in this language…',
       liveLabel: '● Live interpreting', listening: 'Listening…', translating: 'Translating…',
       askShort: 'Ask', askTitle: 'Ask the guide', micHint: 'Tap the mic and speak',
-      micListening: 'Listening… tap to stop', send: 'Send', close: 'Close', sent: 'Question sent',
+      micListening: 'Listening… tap to stop', close: 'Close', sent: 'Question sent',
       qClosed: 'Questions are closed', qClosedHint: 'The guide is not taking questions right now.',
       qNoConn: 'Not connected yet. Please wait a moment.',
       micUnsupported: 'Voice input is not available on this device.',
@@ -54,12 +55,9 @@
       micDenied: 'The microphone is blocked. Allow the mic in the browser settings.',
       micNoDevice: 'No microphone was found on this device.',
       micNetwork: 'Voice input needs a connection. Check your network.',
-      micError: 'Voice input failed ({err}). Try again, or tap ⌨️ to type.',
+      micError: 'Voice input failed ({err}). Tap the mic and try again.',
       micEmpty: 'No words were heard, so nothing was sent.',
-      kbToggle: 'Type instead of speaking', typeHint: 'Type your question',
-      ttsNoVoices: 'No text-to-speech voice was found on this device',
-      ttsError: 'Text-to-speech reported an error',
-      ttsSilent: 'The phone did not respond to text-to-speech',
+      voiceMuteHint: 'No sound? Turn off silent mode and raise the volume (on iPhone the side switch mutes it).',
       voiceUnsupported: 'This device cannot read text aloud.',
       voiceOnToast: 'Sound is on. You will hear the translation from the speaker.',
       speakOk: 'Sound on',
@@ -71,7 +69,8 @@
     },
     'zh-CN': {
       langTitle: '请选择你的语言', langSub: '点一下即可开始',
-      langNote: '选好后马上就能看到字幕，之后也可以更改。',
+      langNote: '点一下语言，字幕和声音马上开始。之后也可以更改。',
+      iosMuteNote: '※iPhone 请关闭侧边的静音开关，否则没有声音。',
       voiceEnable: '🔈 开启声音', voiceOn: '🔊 声音开', voiceOff: '🔇 声音关',
       rate: '速度', font: '字体大小', jump: '最新 ↓',
       displayBoth: '译文＋原文', displayTr: '只看译文', displayOrig: '只看原文',
@@ -81,7 +80,7 @@
       waitStart: '正在等待主持人开始…', waitLang: '正在等待这种语言的字幕…',
       liveLabel: '● 实时翻译中', listening: '正在听…', translating: '翻译中…',
       askShort: '提问', askTitle: '向主持人提问', micHint: '按下麦克风后说话',
-      micListening: '正在听…点一下可停止', send: '发送', close: '关闭', sent: '已发送提问',
+      micListening: '正在听…点一下可停止', close: '关闭', sent: '已发送提问',
       qClosed: '已停止接收提问', qClosedHint: '主持人现在不接受提问。',
       qNoConn: '还没有连接上，请稍等。',
       micUnsupported: '此设备无法使用语音输入。', voiceUnsupported: '此设备无法朗读文字。',
@@ -89,12 +88,9 @@
       micDenied: '麦克风被禁止了，请在浏览器设置里允许麦克风。',
       micNoDevice: '此设备没有找到麦克风。',
       micNetwork: '语音输入需要网络，请检查连接。',
-      micError: '语音输入失败（{err}）。请重试，或按 ⌨️ 输入文字。',
+      micError: '语音输入失败（{err}）。请再按一次麦克风试试。',
       micEmpty: '没有听到内容，所以没有发送。',
-      kbToggle: '改用键盘输入', typeHint: '请输入你的问题',
-      ttsNoVoices: '此设备没有找到朗读语音',
-      ttsError: '朗读出错',
-      ttsSilent: '手机没有响应朗读',
+      voiceMuteHint: '没有声音？请关闭静音模式并调大音量（iPhone 侧边开关会静音）。',
       voiceOnToast: '声音已开启，会从扬声器播放译文。', speakOk: '声音已开启',
       setTitle: '设置', setDisplay: '显示', setCaptionStyle: '字幕',
       optBoth: '译文＋日文原文', optTr: '只看译文（大字）', optOrig: '只看日文原文',
@@ -104,7 +100,8 @@
     },
     'zh-TW': {
       langTitle: '請選擇你的語言', langSub: '點一下即可開始',
-      langNote: '選好後馬上就能看到字幕，之後也可以更改。',
+      langNote: '點一下語言，字幕和聲音馬上開始。之後也可以更改。',
+      iosMuteNote: '※iPhone 請關閉側邊的靜音開關，否則沒有聲音。',
       voiceEnable: '🔈 開啟聲音', voiceOn: '🔊 聲音開', voiceOff: '🔇 聲音關',
       rate: '速度', font: '字體大小', jump: '最新 ↓',
       displayBoth: '譯文＋原文', displayTr: '只看譯文', displayOrig: '只看原文',
@@ -114,7 +111,7 @@
       waitStart: '正在等待主持人開始…', waitLang: '正在等待這種語言的字幕…',
       liveLabel: '● 即時翻譯中', listening: '正在聽…', translating: '翻譯中…',
       askShort: '提問', askTitle: '向主持人提問', micHint: '按下麥克風後說話',
-      micListening: '正在聽…點一下可停止', send: '傳送', close: '關閉', sent: '已送出提問',
+      micListening: '正在聽…點一下可停止', close: '關閉', sent: '已送出提問',
       qClosed: '已停止接收提問', qClosedHint: '主持人現在不接受提問。',
       qNoConn: '還沒連上，請稍等。',
       micUnsupported: '此裝置無法使用語音輸入。', voiceUnsupported: '此裝置無法朗讀文字。',
@@ -122,12 +119,9 @@
       micDenied: '麥克風被封鎖了，請在瀏覽器設定裡允許麥克風。',
       micNoDevice: '此裝置找不到麥克風。',
       micNetwork: '語音輸入需要網路，請檢查連線。',
-      micError: '語音輸入失敗（{err}）。請重試，或按 ⌨️ 輸入文字。',
+      micError: '語音輸入失敗（{err}）。請再按一次麥克風試試。',
       micEmpty: '沒有聽到內容，所以沒有送出。',
-      kbToggle: '改用鍵盤輸入', typeHint: '請輸入你的問題',
-      ttsNoVoices: '此裝置找不到朗讀語音',
-      ttsError: '朗讀發生錯誤',
-      ttsSilent: '手機沒有回應朗讀',
+      voiceMuteHint: '沒有聲音？請關閉靜音模式並調大音量（iPhone 側邊開關會靜音）。',
       voiceOnToast: '聲音已開啟，會從喇叭播放譯文。', speakOk: '聲音已開啟',
       setTitle: '設定', setDisplay: '顯示', setCaptionStyle: '字幕',
       optBoth: '譯文＋日文原文', optTr: '只看譯文（大字）', optOrig: '只看日文原文',
@@ -137,7 +131,8 @@
     },
     ko: {
       langTitle: '언어를 선택해 주세요', langSub: '누르면 바로 시작됩니다',
-      langNote: '선택하면 바로 자막이 표시됩니다. 나중에 바꿀 수 있습니다.',
+      langNote: '언어를 누르면 자막과 소리가 바로 시작됩니다. 나중에 바꿀 수 있습니다.',
+      iosMuteNote: '※iPhone은 측면 무음 스위치를 해제해야 소리가 납니다.',
       voiceEnable: '🔈 소리 켜기', voiceOn: '🔊 소리 켜짐', voiceOff: '🔇 소리 꺼짐',
       rate: '속도', font: '글자 크기', jump: '최신 ↓',
       displayBoth: '번역＋원문', displayTr: '번역만', displayOrig: '원문만',
@@ -147,7 +142,7 @@
       waitStart: '가이드가 시작되기를 기다리고 있습니다…', waitLang: '이 언어의 자막을 기다리고 있습니다…',
       liveLabel: '● 동시 통역 중', listening: '듣는 중…', translating: '번역 중…',
       askShort: '질문', askTitle: '가이드에게 질문', micHint: '마이크를 누르고 말하세요',
-      micListening: '듣는 중… 누르면 멈춥니다', send: '보내기', close: '닫기', sent: '질문을 보냈습니다',
+      micListening: '듣는 중… 누르면 멈춥니다', close: '닫기', sent: '질문을 보냈습니다',
       qClosed: '질문 접수 중지', qClosedHint: '가이드가 지금은 질문을 받지 않습니다.',
       qNoConn: '아직 연결되지 않았습니다. 잠시 기다려 주세요.',
       micUnsupported: '이 기기에서는 음성 입력을 쓸 수 없습니다.',
@@ -155,12 +150,9 @@
       micDenied: '마이크가 차단되어 있어요. 브라우저 설정에서 마이크를 허용해 주세요.',
       micNoDevice: '이 기기에서 마이크를 찾을 수 없어요.',
       micNetwork: '음성 입력에 네트워크가 필요해요. 연결을 확인해 주세요.',
-      micError: '음성 입력에 실패했어요({err}). 다시 시도하거나 ⌨️ 로 입력해 주세요.',
+      micError: '음성 입력에 실패했어요({err}). 마이크를 다시 눌러 주세요.',
       micEmpty: '아무 말도 들리지 않아 보내지 않았어요.',
-      kbToggle: '키보드로 입력', typeHint: '질문을 입력하세요',
-      ttsNoVoices: '이 기기에 읽어 주는 음성이 없어요',
-      ttsError: '읽어 주기 오류',
-      ttsSilent: '휴대폰이 읽어 주기에 응답하지 않았어요',
+      voiceMuteHint: '소리가 안 나면 무음 모드를 끄고 볼륨을 올려 주세요 (iPhone은 측면 스위치가 무음입니다).',
       voiceUnsupported: '이 기기는 읽어주기를 지원하지 않습니다.',
       voiceOnToast: '소리를 켰습니다. 스피커로 통역이 나옵니다.', speakOk: '소리 켜짐',
       setTitle: '설정', setDisplay: '표시', setCaptionStyle: '자막',
@@ -171,7 +163,8 @@
     },
     es: {
       langTitle: 'Elige tu idioma', langSub: 'Toca un idioma para empezar',
-      langNote: 'Los subtítulos empiezan al instante. Puedes cambiarlo después.',
+      langNote: 'Toca un idioma y empiezan los subtítulos y el sonido. Puedes cambiarlo después.',
+      iosMuteNote: '※En iPhone, desactiva el interruptor de silencio lateral para oír el sonido.',
       voiceEnable: '🔈 Activar el sonido', voiceOn: '🔊 Sonido ON', voiceOff: '🔇 Sonido OFF',
       rate: 'Velocidad', font: 'Tamaño de letra', jump: 'Lo último ↓',
       displayBoth: 'Traducción + original', displayTr: 'Solo traducción', displayOrig: 'Solo original',
@@ -181,7 +174,7 @@
       waitStart: 'Esperando a que el guía empiece…', waitLang: 'Esperando subtítulos en este idioma…',
       liveLabel: '● Interpretación en vivo', listening: 'Escuchando…', translating: 'Traduciendo…',
       askShort: 'Preguntar', askTitle: 'Pregunta al guía', micHint: 'Toca el micrófono y habla',
-      micListening: 'Escuchando… toca para parar', send: 'Enviar', close: 'Cerrar', sent: 'Pregunta enviada',
+      micListening: 'Escuchando… toca para parar', close: 'Cerrar', sent: 'Pregunta enviada',
       qClosed: 'Preguntas cerradas', qClosedHint: 'El guía no acepta preguntas ahora mismo.',
       qNoConn: 'Aún no hay conexión. Espera un momento.',
       micUnsupported: 'Este dispositivo no admite entrada de voz.',
@@ -189,12 +182,9 @@
       micDenied: 'El micrófono está bloqueado. Permite el micrófono en los ajustes del navegador.',
       micNoDevice: 'No se encontró ningún micrófono en este dispositivo.',
       micNetwork: 'La entrada de voz necesita conexión. Revisa tu red.',
-      micError: 'Falló la entrada de voz ({err}). Inténtalo otra vez o toca ⌨️ para escribir.',
+      micError: 'Falló la entrada de voz ({err}). Toca el micrófono otra vez.',
       micEmpty: 'No se oyó nada, así que no se envió.',
-      kbToggle: 'Escribir en vez de hablar', typeHint: 'Escribe tu pregunta',
-      ttsNoVoices: 'No hay ninguna voz de lectura en este dispositivo',
-      ttsError: 'Error de lectura en voz alta',
-      ttsSilent: 'El teléfono no respondió a la lectura en voz alta',
+      voiceMuteHint: '¿No hay sonido? Desactiva el modo silencio y sube el volumen (en iPhone el interruptor lateral silencia).',
       voiceUnsupported: 'Este dispositivo no puede leer en voz alta.',
       voiceOnToast: 'Sonido activado. Oirás la traducción por el altavoz.', speakOk: 'Sonido activado',
       setTitle: 'Ajustes', setDisplay: 'Pantalla', setCaptionStyle: 'Subtítulos',
@@ -205,7 +195,8 @@
     },
     fr: {
       langTitle: 'Choisissez votre langue', langSub: 'Touchez une langue pour commencer',
-      langNote: 'Les sous-titres démarrent tout de suite. Modifiable ensuite.',
+      langNote: 'Touchez une langue : sous-titres et son démarrent aussitôt. Modifiable ensuite.',
+      iosMuteNote: '※Sur iPhone, désactivez le commutateur silencieux sur le côté pour entendre.',
       voiceEnable: '🔈 Activer le son', voiceOn: '🔊 Son ON', voiceOff: '🔇 Son OFF',
       rate: 'Vitesse', font: 'Taille du texte', jump: 'Plus récent ↓',
       displayBoth: 'Traduction + original', displayTr: 'Traduction seule', displayOrig: 'Original seul',
@@ -215,7 +206,7 @@
       waitStart: 'En attente du démarrage du guide…', waitLang: 'En attente des sous-titres dans cette langue…',
       liveLabel: '● Interprétation en direct', listening: 'Écoute…', translating: 'Traduction…',
       askShort: 'Demander', askTitle: 'Poser une question', micHint: 'Touchez le micro et parlez',
-      micListening: 'Écoute… touchez pour arrêter', send: 'Envoyer', close: 'Fermer', sent: 'Question envoyée',
+      micListening: 'Écoute… touchez pour arrêter', close: 'Fermer', sent: 'Question envoyée',
       qClosed: 'Questions fermées', qClosedHint: 'Le guide ne prend pas de questions pour le moment.',
       qNoConn: 'Pas encore connecté. Patientez un instant.',
       micUnsupported: 'La saisie vocale n’est pas disponible sur cet appareil.',
@@ -223,12 +214,9 @@
       micDenied: 'Le micro est bloqué. Autorisez le micro dans les réglages du navigateur.',
       micNoDevice: 'Aucun micro trouvé sur cet appareil.',
       micNetwork: 'La saisie vocale a besoin d’une connexion. Vérifiez votre réseau.',
-      micError: 'La saisie vocale a échoué ({err}). Réessayez ou touchez ⌨️ pour écrire.',
+      micError: 'La saisie vocale a échoué ({err}). Touchez de nouveau le micro.',
       micEmpty: 'Rien n’a été entendu, donc rien n’a été envoyé.',
-      kbToggle: 'Écrire au lieu de parler', typeHint: 'Écrivez votre question',
-      ttsNoVoices: 'Aucune voix de synthèse sur cet appareil',
-      ttsError: 'Erreur de synthèse vocale',
-      ttsSilent: 'Le téléphone ne répond pas à la synthèse vocale',
+      voiceMuteHint: 'Pas de son ? Désactivez le mode silencieux et montez le volume (sur iPhone, le commutateur latéral coupe le son).',
       voiceUnsupported: 'Cet appareil ne peut pas lire le texte à voix haute.',
       voiceOnToast: 'Son activé. La traduction sort par le haut-parleur.', speakOk: 'Son activé',
       setTitle: 'Réglages', setDisplay: 'Affichage', setCaptionStyle: 'Sous-titres',
@@ -239,7 +227,8 @@
     },
     de: {
       langTitle: 'Wählen Sie Ihre Sprache', langSub: 'Sprache antippen und loslegen',
-      langNote: 'Die Untertitel starten sofort. Später änderbar.',
+      langNote: 'Sprache antippen: Untertitel und Ton starten sofort. Später änderbar.',
+      iosMuteNote: '※Beim iPhone den Stummschalter an der Seite ausschalten, sonst bleibt es still.',
       voiceEnable: '🔈 Ton einschalten', voiceOn: '🔊 Ton AN', voiceOff: '🔇 Ton AUS',
       rate: 'Tempo', font: 'Schriftgröße', jump: 'Neueste ↓',
       displayBoth: 'Übersetzung + Original', displayTr: 'Nur Übersetzung', displayOrig: 'Nur Original',
@@ -249,7 +238,7 @@
       waitStart: 'Warte, bis der Guide startet…', waitLang: 'Warte auf Untertitel in dieser Sprache…',
       liveLabel: '● Live-Übersetzung', listening: 'Höre zu…', translating: 'Übersetze…',
       askShort: 'Fragen', askTitle: 'Guide fragen', micHint: 'Mikrofon antippen und sprechen',
-      micListening: 'Höre zu… zum Stoppen antippen', send: 'Senden', close: 'Schließen', sent: 'Frage gesendet',
+      micListening: 'Höre zu… zum Stoppen antippen', close: 'Schließen', sent: 'Frage gesendet',
       qClosed: 'Fragen geschlossen', qClosedHint: 'Der Guide nimmt gerade keine Fragen an.',
       qNoConn: 'Noch nicht verbunden. Bitte kurz warten.',
       micUnsupported: 'Spracheingabe ist auf diesem Gerät nicht verfügbar.',
@@ -257,12 +246,9 @@
       micDenied: 'Das Mikrofon ist blockiert. Erlaube das Mikrofon in den Browsereinstellungen.',
       micNoDevice: 'Auf diesem Gerät wurde kein Mikrofon gefunden.',
       micNetwork: 'Spracheingabe braucht eine Verbindung. Prüfe dein Netz.',
-      micError: 'Spracheingabe fehlgeschlagen ({err}). Versuche es erneut oder tippe ⌨️ zum Tippen.',
+      micError: 'Spracheingabe fehlgeschlagen ({err}). Tippe erneut auf das Mikrofon.',
       micEmpty: 'Nichts gehört, daher nicht gesendet.',
-      kbToggle: 'Statt sprechen tippen', typeHint: 'Frage eingeben',
-      ttsNoVoices: 'Auf diesem Gerät wurde keine Sprachausgabe-Stimme gefunden',
-      ttsError: 'Fehler bei der Sprachausgabe',
-      ttsSilent: 'Das Telefon reagiert nicht auf die Sprachausgabe',
+      voiceMuteHint: 'Kein Ton? Schalte den Stumm-Modus aus und erhöhe die Lautstärke (beim iPhone schaltet der Seitenschalter stumm).',
       voiceUnsupported: 'Dieses Gerät kann Text nicht vorlesen.',
       voiceOnToast: 'Ton ist an. Die Übersetzung kommt aus dem Lautsprecher.', speakOk: 'Ton an',
       setTitle: 'Einstellungen', setDisplay: 'Anzeige', setCaptionStyle: 'Untertitel',
@@ -273,7 +259,8 @@
     },
     pt: {
       langTitle: 'Escolha o seu idioma', langSub: 'Toque no idioma para começar',
-      langNote: 'As legendas começam na hora. Dá para mudar depois.',
+      langNote: 'Toque num idioma: legendas e som começam na hora. Dá para mudar depois.',
+      iosMuteNote: '※No iPhone, desligue a chave de silêncio na lateral para ouvir o som.',
       voiceEnable: '🔈 Ativar o som', voiceOn: '🔊 Som LIG', voiceOff: '🔇 Som DESL',
       rate: 'Velocidade', font: 'Tamanho do texto', jump: 'Mais recente ↓',
       displayBoth: 'Tradução + original', displayTr: 'Só tradução', displayOrig: 'Só original',
@@ -283,7 +270,7 @@
       waitStart: 'Aguardando o guia começar…', waitLang: 'Aguardando legendas neste idioma…',
       liveLabel: '● Interpretação ao vivo', listening: 'Ouvindo…', translating: 'Traduzindo…',
       askShort: 'Perguntar', askTitle: 'Pergunte ao guia', micHint: 'Toque no microfone e fale',
-      micListening: 'Ouvindo… toque para parar', send: 'Enviar', close: 'Fechar', sent: 'Pergunta enviada',
+      micListening: 'Ouvindo… toque para parar', close: 'Fechar', sent: 'Pergunta enviada',
       qClosed: 'Perguntas fechadas', qClosedHint: 'O guia não está aceitando perguntas agora.',
       qNoConn: 'Ainda não conectado. Aguarde um instante.',
       micUnsupported: 'Entrada de voz não disponível neste aparelho.',
@@ -291,12 +278,9 @@
       micDenied: 'O microfone está bloqueado. Permita o microfone nas configurações do navegador.',
       micNoDevice: 'Nenhum microfone foi encontrado neste aparelho.',
       micNetwork: 'A entrada de voz precisa de conexão. Verifique sua rede.',
-      micError: 'Falha na entrada de voz ({err}). Tente de novo ou toque em ⌨️ para digitar.',
+      micError: 'Falha na entrada de voz ({err}). Toque no microfone de novo.',
       micEmpty: 'Nada foi ouvido, então não foi enviado.',
-      kbToggle: 'Digitar em vez de falar', typeHint: 'Digite sua pergunta',
-      ttsNoVoices: 'Nenhuma voz de leitura encontrada neste aparelho',
-      ttsError: 'Erro na leitura em voz alta',
-      ttsSilent: 'O telefone não respondeu à leitura em voz alta',
+      voiceMuteHint: 'Sem som? Desative o modo silencioso e aumente o volume (no iPhone a chave lateral silencia).',
       voiceUnsupported: 'Este aparelho não lê texto em voz alta.',
       voiceOnToast: 'Som ativado. A tradução sai pelo alto-falante.', speakOk: 'Som ativado',
       setTitle: 'Ajustes', setDisplay: 'Tela', setCaptionStyle: 'Legendas',
@@ -307,7 +291,8 @@
     },
     it: {
       langTitle: 'Scegli la tua lingua', langSub: 'Tocca una lingua per iniziare',
-      langNote: 'I sottotitoli partono subito. Puoi cambiarli dopo.',
+      langNote: 'Tocca una lingua: sottotitoli e audio partono subito. Puoi cambiarli dopo.',
+      iosMuteNote: '※Su iPhone disattiva l’interruttore del silenzioso sul lato per sentire l’audio.',
       voiceEnable: '🔈 Attiva l’audio', voiceOn: '🔊 Audio ON', voiceOff: '🔇 Audio OFF',
       rate: 'Velocità', font: 'Dimensione testo', jump: 'Ultimo ↓',
       displayBoth: 'Traduzione + originale', displayTr: 'Solo traduzione', displayOrig: 'Solo originale',
@@ -317,7 +302,7 @@
       waitStart: 'In attesa che la guida inizi…', waitLang: 'In attesa dei sottotitoli in questa lingua…',
       liveLabel: '● Interpretariato dal vivo', listening: 'In ascolto…', translating: 'Traduzione…',
       askShort: 'Chiedi', askTitle: 'Chiedi alla guida', micHint: 'Tocca il microfono e parla',
-      micListening: 'In ascolto… tocca per fermare', send: 'Invia', close: 'Chiudi', sent: 'Domanda inviata',
+      micListening: 'In ascolto… tocca per fermare', close: 'Chiudi', sent: 'Domanda inviata',
       qClosed: 'Domande chiuse', qClosedHint: 'La guida non accetta domande in questo momento.',
       qNoConn: 'Non ancora connesso. Attendi un momento.',
       micUnsupported: 'L’input vocale non è disponibile su questo dispositivo.',
@@ -325,12 +310,9 @@
       micDenied: 'Il microfono è bloccato. Consenti il microfono nelle impostazioni del browser.',
       micNoDevice: 'Nessun microfono trovato su questo dispositivo.',
       micNetwork: 'L’input vocale richiede una connessione. Controlla la rete.',
-      micError: 'Input vocale non riuscito ({err}). Riprova o tocca ⌨️ per scrivere.',
+      micError: 'Input vocale non riuscito ({err}). Tocca di nuovo il microfono.',
       micEmpty: 'Non si è sentito nulla, quindi non è stato inviato.',
-      kbToggle: 'Scrivere invece di parlare', typeHint: 'Scrivi la tua domanda',
-      ttsNoVoices: 'Nessuna voce di lettura trovata su questo dispositivo',
-      ttsError: 'Errore della lettura ad alta voce',
-      ttsSilent: 'Il telefono non ha risposto alla lettura ad alta voce',
+      voiceMuteHint: 'Nessun suono? Disattiva la modalità silenziosa e alza il volume (su iPhone l’interruttore laterale disattiva l’audio).',
       voiceUnsupported: 'Questo dispositivo non legge il testo ad alta voce.',
       voiceOnToast: 'Audio attivo. La traduzione esce dall’altoparlante.', speakOk: 'Audio attivo',
       setTitle: 'Impostazioni', setDisplay: 'Schermo', setCaptionStyle: 'Sottotitoli',
@@ -341,7 +323,8 @@
     },
     th: {
       langTitle: 'เลือกภาษาของคุณ', langSub: 'แตะภาษาเพื่อเริ่ม',
-      langNote: 'เลือกแล้วคำบรรยายจะขึ้นทันที เปลี่ยนภายหลังได้',
+      langNote: 'แตะภาษา แล้วคำบรรยายและเสียงจะเริ่มทันที เปลี่ยนภายหลังได้',
+      iosMuteNote: '※iPhone ต้องปิดสวิตช์ปิดเสียงด้านข้างจึงจะมีเสียง',
       voiceEnable: '🔈 เปิดเสียง', voiceOn: '🔊 เสียงเปิด', voiceOff: '🔇 เสียงปิด',
       rate: 'ความเร็ว', font: 'ขนาดตัวอักษร', jump: 'ล่าสุด ↓',
       displayBoth: 'คำแปล＋ต้นฉบับ', displayTr: 'คำแปลเท่านั้น', displayOrig: 'ต้นฉบับเท่านั้น',
@@ -351,7 +334,7 @@
       waitStart: 'กำลังรอให้ไกด์เริ่ม…', waitLang: 'กำลังรอคำบรรยายภาษานี้…',
       liveLabel: '● กำลังแปลสด', listening: 'กำลังฟัง…', translating: 'กำลังแปล…',
       askShort: 'ถาม', askTitle: 'ถามไกด์', micHint: 'แตะไมโครโฟนแล้วพูด',
-      micListening: 'กำลังฟัง… แตะเพื่อหยุด', send: 'ส่ง', close: 'ปิด', sent: 'ส่งคำถามแล้ว',
+      micListening: 'กำลังฟัง… แตะเพื่อหยุด', close: 'ปิด', sent: 'ส่งคำถามแล้ว',
       qClosed: 'ปิดรับคำถาม', qClosedHint: 'ตอนนี้ไกด์ไม่รับคำถาม',
       qNoConn: 'ยังไม่ได้เชื่อมต่อ กรุณารอสักครู่',
       micUnsupported: 'อุปกรณ์นี้ใช้การพิมพ์ด้วยเสียงไม่ได้',
@@ -359,12 +342,9 @@
       micDenied: 'ไมโครโฟนถูกบล็อก กรุณาอนุญาตไมโครโฟนในการตั้งค่าเบราว์เซอร์',
       micNoDevice: 'ไม่พบไมโครโฟนบนเครื่องนี้',
       micNetwork: 'การพูดต้องใช้อินเทอร์เน็ต กรุณาตรวจสอบการเชื่อมต่อ',
-      micError: 'พูดไม่สำเร็จ ({err}) ลองอีกครั้ง หรือกด ⌨️ เพื่อพิมพ์',
+      micError: 'พูดไม่สำเร็จ ({err}) แตะไมโครโฟนอีกครั้ง',
       micEmpty: 'ไม่ได้ยินคำพูด จึงยังไม่ส่ง',
-      kbToggle: 'พิมพ์แทนการพูด', typeHint: 'พิมพ์คำถามของคุณ',
-      ttsNoVoices: 'ไม่พบเสียงอ่านบนเครื่องนี้',
-      ttsError: 'เกิดข้อผิดพลาดในการอ่านออกเสียง',
-      ttsSilent: 'โทรศัพท์ไม่ตอบสนองการอ่านออกเสียง',
+      voiceMuteHint: 'ไม่มีเสียง? ปิดโหมดเงียบและเพิ่มเสียง (iPhone สวิตช์ด้านข้างจะปิดเสียง)',
       voiceUnsupported: 'อุปกรณ์นี้อ่านออกเสียงไม่ได้',
       voiceOnToast: 'เปิดเสียงแล้ว คำแปลจะออกจากลำโพง', speakOk: 'เสียงเปิดแล้ว',
       setTitle: 'ตั้งค่า', setDisplay: 'การแสดงผล', setCaptionStyle: 'คำบรรยาย',
@@ -375,7 +355,8 @@
     },
     vi: {
       langTitle: 'Chọn ngôn ngữ của bạn', langSub: 'Chạm một ngôn ngữ để bắt đầu',
-      langNote: 'Phụ đề hiện ngay. Có thể đổi sau.',
+      langNote: 'Chạm vào ngôn ngữ là phụ đề và âm thanh bắt đầu ngay. Có thể đổi sau.',
+      iosMuteNote: '※Trên iPhone, hãy tắt công tắc im lặng ở cạnh máy để có tiếng.',
       voiceEnable: '🔈 Bật âm thanh', voiceOn: '🔊 Âm thanh BẬT', voiceOff: '🔇 Âm thanh TẮT',
       rate: 'Tốc độ', font: 'Cỡ chữ', jump: 'Mới nhất ↓',
       displayBoth: 'Bản dịch + nguyên văn', displayTr: 'Chỉ bản dịch', displayOrig: 'Chỉ nguyên văn',
@@ -385,7 +366,7 @@
       waitStart: 'Đang chờ hướng dẫn viên bắt đầu…', waitLang: 'Đang chờ phụ đề bằng ngôn ngữ này…',
       liveLabel: '● Đang phiên dịch trực tiếp', listening: 'Đang nghe…', translating: 'Đang dịch…',
       askShort: 'Hỏi', askTitle: 'Hỏi hướng dẫn viên', micHint: 'Chạm vào mic và nói',
-      micListening: 'Đang nghe… chạm để dừng', send: 'Gửi', close: 'Đóng', sent: 'Đã gửi câu hỏi',
+      micListening: 'Đang nghe… chạm để dừng', close: 'Đóng', sent: 'Đã gửi câu hỏi',
       qClosed: 'Đã đóng nhận câu hỏi', qClosedHint: 'Hiện hướng dẫn viên không nhận câu hỏi.',
       qNoConn: 'Chưa kết nối. Vui lòng đợi một chút.',
       micUnsupported: 'Thiết bị này không hỗ trợ nhập bằng giọng nói.',
@@ -393,12 +374,9 @@
       micDenied: 'Micro đang bị chặn. Hãy cho phép micro trong cài đặt trình duyệt.',
       micNoDevice: 'Không tìm thấy micro trên thiết bị này.',
       micNetwork: 'Nhập bằng giọng nói cần mạng. Hãy kiểm tra kết nối.',
-      micError: 'Nhập giọng nói thất bại ({err}). Thử lại hoặc nhấn ⌨️ để gõ.',
+      micError: 'Nhập giọng nói thất bại ({err}). Nhấn lại mic và thử lại.',
       micEmpty: 'Không nghe thấy gì nên chưa gửi.',
-      kbToggle: 'Gõ thay vì nói', typeHint: 'Nhập câu hỏi của bạn',
-      ttsNoVoices: 'Không có giọng đọc trên thiết bị này',
-      ttsError: 'Lỗi đọc thành tiếng',
-      ttsSilent: 'Điện thoại không phản hồi khi đọc thành tiếng',
+      voiceMuteHint: 'Không có tiếng? Hãy tắt chế độ im lặng và tăng âm lượng (iPhone bị tắt tiếng bằng công tắc bên hông).',
       voiceUnsupported: 'Thiết bị này không đọc được văn bản.',
       voiceOnToast: 'Đã bật âm thanh. Bản dịch sẽ phát ra loa.', speakOk: 'Đã bật âm thanh',
       setTitle: 'Cài đặt', setDisplay: 'Hiển thị', setCaptionStyle: 'Phụ đề',
@@ -409,7 +387,8 @@
     },
     id: {
       langTitle: 'Pilih bahasa Anda', langSub: 'Ketuk bahasa untuk mulai',
-      langNote: 'Teks muncul langsung. Bisa diubah nanti.',
+      langNote: 'Ketuk bahasa, teks dan suara langsung mulai. Bisa diubah nanti.',
+      iosMuteNote: '※Di iPhone, matikan sakelar senyap di samping agar ada suara.',
       voiceEnable: '🔈 Nyalakan suara', voiceOn: '🔊 Suara AKTIF', voiceOff: '🔇 Suara NONAKTIF',
       rate: 'Kecepatan', font: 'Ukuran huruf', jump: 'Terbaru ↓',
       displayBoth: 'Terjemahan + asli', displayTr: 'Hanya terjemahan', displayOrig: 'Hanya asli',
@@ -419,7 +398,7 @@
       waitStart: 'Menunggu pemandu memulai…', waitLang: 'Menunggu teks dalam bahasa ini…',
       liveLabel: '● Penerjemahan langsung', listening: 'Mendengarkan…', translating: 'Menerjemahkan…',
       askShort: 'Tanya', askTitle: 'Tanya pemandu', micHint: 'Ketuk mikrofon lalu bicara',
-      micListening: 'Mendengarkan… ketuk untuk berhenti', send: 'Kirim', close: 'Tutup', sent: 'Pertanyaan terkirim',
+      micListening: 'Mendengarkan… ketuk untuk berhenti', close: 'Tutup', sent: 'Pertanyaan terkirim',
       qClosed: 'Pertanyaan ditutup', qClosedHint: 'Pemandu sedang tidak menerima pertanyaan.',
       qNoConn: 'Belum terhubung. Mohon tunggu sebentar.',
       micUnsupported: 'Input suara tidak tersedia di perangkat ini.',
@@ -427,12 +406,9 @@
       micDenied: 'Mikrofon diblokir. Izinkan mikrofon di pengaturan browser.',
       micNoDevice: 'Mikrofon tidak ditemukan di perangkat ini.',
       micNetwork: 'Input suara butuh koneksi. Periksa jaringanmu.',
-      micError: 'Input suara gagal ({err}). Coba lagi atau ketuk ⌨️ untuk mengetik.',
+      micError: 'Input suara gagal ({err}). Ketuk mic lagi.',
       micEmpty: 'Tidak ada yang terdengar, jadi belum dikirim.',
-      kbToggle: 'Ketik, bukan bicara', typeHint: 'Ketik pertanyaanmu',
-      ttsNoVoices: 'Tidak ada suara pembaca di perangkat ini',
-      ttsError: 'Kesalahan pembacaan suara',
-      ttsSilent: 'Ponsel tidak merespons pembacaan suara',
+      voiceMuteHint: 'Tidak ada suara? Matikan mode senyap dan naikkan volume (di iPhone, sakelar samping membisukan).',
       voiceUnsupported: 'Perangkat ini tidak bisa membacakan teks.',
       voiceOnToast: 'Suara aktif. Terjemahan keluar dari speaker.', speakOk: 'Suara aktif',
       setTitle: 'Pengaturan', setDisplay: 'Tampilan', setCaptionStyle: 'Teks',
@@ -486,6 +462,31 @@
     const d = new Date(ts || Date.now());
     return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   };
+
+  // 端末の言語から12言語のどれかを推測する（言語選択画面の文言を最初から相手の言語に近づけるため）
+  function guessLang() {
+    let list = [];
+    try { list = [].concat(navigator.languages || [], navigator.language || []); } catch (e) { list = []; }
+    for (const raw of list) {
+      const tag = String(raw || '').toLowerCase().replace('_', '-');
+      if (!tag) continue;
+      if (/^zh-(tw|hk|mo|hant)/.test(tag)) return 'zh-TW';
+      if (/^zh/.test(tag)) return 'zh-CN';
+      const base = tag.split('-')[0];
+      const hit = LANGS.find(L => L.code.toLowerCase() === tag || L.code.toLowerCase() === base);
+      if (hit) return hit.code;
+    }
+    return '';
+  }
+
+  // iPhone / iPad かどうか（消音スイッチの一言を出すときだけ使う）
+  const IS_IOS = (() => {
+    try {
+      const ua = String(navigator.userAgent || '');
+      return /iPhone|iPad|iPod/i.test(ua) ||
+             (/Macintosh/i.test(ua) && Number(navigator.maxTouchPoints || 0) > 1);   // iPadOS 13+
+    } catch (e) { return false; }
+  })();
 
   // 開発時の確認用（画面には出さない）
   window.__qriErrors = [];
@@ -598,9 +599,7 @@
     canceledAt: 0,     // cancel() した時刻（直後の speak を 50ms 遅らせる）
     spokeAt: 0,        // 発話を始めた時刻（スタック検出用）
     guard: null,       // onend が来ないときの保険タイマー
-    warned: {},        // 「この言語の音声が無い」案内を出した言語
-    audio: null,       // 確認チャイム用の AudioContext（タップ時に作る）
-    diagTimer: null    // 発話が始まらない時の自己診断タイマー
+    diagTimer: null    // 発話が始まらない時の案内タイマー
   };
 
   /* ---------------------------------------------------------
@@ -1973,6 +1972,14 @@
       S.myLang = langParam;
       saveSettings();
       enterStage();
+    } else if (!S.myLang) {
+      // まだ言語を知らないときは端末の言語から推測（選択画面の文言用。選ぶのは本人）
+      const guess = guessLang();
+      if (guess) {
+        S.myLang = guess;
+        saveSettings();
+        applyGuestText();          // 選択画面の文言を推測した言語で出す（選んだ扱いにはしない）
+      }
     }
 
     ensureLibs().then(connectParticipant);
@@ -2117,6 +2124,10 @@
     updateQaUI();
     setQHint(P.qListening ? 'micListening' : 'micHint');
 
+    // iPhone のときだけ、言語選択画面に消音スイッチの一言を出す
+    const iosNote = $('#pLangIosNote');
+    if (iosNote) iosNote.classList.toggle('hidden', !IS_IOS);
+
     const sheet = $('#sheet');
     if (sheet && !sheet.classList.contains('hidden') && A.role === 'participant') {
       $('#sheetTitle').textContent = t('setTitle');
@@ -2157,83 +2168,24 @@
   // マイクが使えない原因を #qHint / #qLive に必ず出す（無反応に見せない）
   function showMicError(err, opts) {
     const e = String(err || 'error');
+    // aborted は stop() や iOS Safari の自動終了でも出るので、エラーとして見せない
+    if (e === 'aborted') return;
     const msg = micErrorText(e);
     P.qErr = e;
-    // マイク自体が使えない原因のときは、文字入力の逃げ道も自動で出す
-    // （setQaType は #qLive を消すので、先に開いてから文言を入れる）
-    if (e === 'not-allowed' || e === 'service-not-allowed' || e === 'audio-capture' || e === 'unsupported') {
-      setQaType(true);
-    }
     setQHintText(msg);
     setQLiveText('⚠️ ' + e);
     if (!(opts && opts.silentToast)) toast(msg, 4200);
   }
 
-  // 文字入力（⌨️）の開閉。普段はキーボードを出さず、押したときだけ1行入力欄を出す。
-  function setQaType(open) {
-    const wrap = $('#qaTypeWrap');
-    const btn = $('#qKb');
-    if (!wrap) return;
-    wrap.classList.toggle('hidden', !open);
-    if (btn) btn.classList.toggle('on', !!open);
-    // 入力欄が開いている間は、下の「送信」ボタンを隠す（ボタンが二つ並ばないように）
-    const mainSend = $('#qSend');
-    if (mainSend) mainSend.classList.toggle('hidden', !!open);
-    const inp = $('#qaTypeInput');
-    if (open) {
-      setQLiveText('');
-      if (inp) { try { inp.focus(); } catch (e) {} }
-    } else {
-      if (inp) inp.value = '';
-    }
-  }
-
-  function toggleQaType() {
-    const wrap = $('#qaTypeWrap');
-    const open = !wrap || wrap.classList.contains('hidden');
-    if (open) {
-      stopQMic(true);              // マイクは止めて、キーボードに切り替える
-      setQaType(true);
-      setQHint('typeHint');
-    } else {
-      setQaType(false);
-      setQHint('micHint');
-      startQMic();
-    }
-  }
-
-  function sendTypedQuestion() {
-    const inp = $('#qaTypeInput');
-    const text = inp ? String(inp.value || '').trim() : '';
-    if (!text) {
-      setQHint('micEmpty');
-      if (inp) { try { inp.focus(); } catch (e) {} }
-      return;
-    }
-    if (!sendQuestionText(text, {})) return;      // 失敗理由は sendQuestionText が出す
-    P.qSent = true;
-    if (inp) inp.value = '';
-    setQaType(false);
-    setQHint('sent');
-    if (P.qCloseTimer) clearTimeout(P.qCloseTimer);
-    P.qCloseTimer = setTimeout(() => { P.qCloseTimer = null; closeQaPop(); }, 900);
-  }
-
   /* ---------------- 質問（ゲスト → ガイド）
-     文字入力欄は置かず、右下の小さなボタン → マイクのポップアップだけにする。
-     （スマホでキーボードが出て画面が狭くなるのを防ぐ） */
+     右下の小さなボタン → マイクのポップアップだけ。文字入力も送信ボタンも置かない。
+     マイクに話す → 認識が終わったら自動で送信して、自動で閉じる。 */
   function updateQaUI() {
     const on = P.qOpen !== false;
     const notice = $('#qNotice');
-    const send = $('#qSend');
     const mic = $('#qMic');
     if (notice) notice.classList.toggle('hidden', on);
-    if (send) send.disabled = !on;
     if (mic) mic.disabled = !on;
-    const kb = $('#qKb');
-    if (kb) kb.disabled = !on;
-    const typeSend = $('#qaTypeSend');
-    if (typeSend) typeSend.disabled = !on;
     const fab = $('#btnQAsk');
     if (fab) fab.classList.toggle('off', !on);
     if (!on) {
@@ -2254,7 +2206,6 @@
     P.qSent = false;
     const live = $('#qLive');
     if (live) live.textContent = '';
-    setQaType(false);
     updateQaUI();
     // まだ繋がっていないなら、なぜ送れないかを先に伝える
     if (!P.conn || !P.conn.open) {
@@ -2271,7 +2222,6 @@
     if (P.qCloseTimer) { clearTimeout(P.qCloseTimer); P.qCloseTimer = null; }
     const pop = $('#qaPop');
     if (pop) pop.classList.add('hidden');
-    setQaType(false);
     const fab = $('#btnQAsk');
     const stage = $('#pStage');
     if (fab && stage && !stage.classList.contains('hidden')) fab.classList.remove('hidden');
@@ -2288,7 +2238,6 @@
     if (!SR) {
       setQHint('micUnsupported');
       toast(t('micUnsupported'), 3200);
-      setQaType(true);          // マイクが使えない → 文字入力の逃げ道を出しておく
       return false;
     }
     const L = LANG_MAP[S.myLang] || LANG_MAP.en;
@@ -2297,7 +2246,6 @@
     catch (e) {
       setQHint('micUnsupported');
       toast(t('micUnsupported'), 3200);
-      setQaType(true);
       return false;
     }
     rec.lang = L.bcp47;
@@ -2335,7 +2283,13 @@
       P.qRec = null;
       const m = $('#qMic');
       if (m) m.classList.remove('listening');
-      // どのエラーも必ず画面に出す（今までは一部だけだったので「無反応」に見えていた）
+      // aborted は stop() や iOS Safari の自動終了でも出る。静かに受け流し、
+      // 聞き取れている文があればそのまま送る。
+      if (err === 'aborted') {
+        if (P.qOpen !== false && P.qText && !P.qSent) autoSendQuestion();
+        return;
+      }
+      // それ以外のエラーは必ず画面に出す（無反応に見せない）
       showMicError(err);
     };
     rec.onend = () => {
@@ -2344,7 +2298,7 @@
       const m = $('#qMic');
       if (m) m.classList.remove('listening');
       const hadErr = !!P.qErr;
-      // 話し終わったら自動で送る（送信ボタンでも送れる）
+      // 話し終わったら自動で送る（送信ボタンは無い）
       if (P.qOpen !== false && P.qText && !P.qSent) autoSendQuestion();
       else if (P.qOpen !== false && !P.qSent && !hadErr) {
         // 何も聞き取れなかったときも「なぜ送られないか」を出す
@@ -2427,23 +2381,6 @@
     return true;
   }
 
-  function sendQuestion() {
-    // ⌨️の入力欄が開いていて文字が入っていればそちらを送る
-    const inp = $('#qaTypeInput');
-    const typed = inp && !$('#qaTypeWrap').classList.contains('hidden') ? String(inp.value || '').trim() : '';
-    if (typed) { sendTypedQuestion(); return; }
-    const text = String(P.qText || '').trim();
-    if (!text) { setQHint('micEmpty'); toast(t('micHint'), 2400); return; }
-    const ok = sendQuestionText(text, {});
-    if (ok) {
-      P.qSent = true;
-      stopQMic(true);       // 送ったらマイクは止める（点滅も消す）
-      const live = $('#qLive');
-      if (live) live.textContent = '';
-      P.qCloseTimer = setTimeout(() => { P.qCloseTimer = null; closeQaPop(); }, 900);
-    }
-  }
-
   function onHostData(msg) {
     if (!msg || typeof msg !== 'object') return;
     switch (msg.t) {
@@ -2504,6 +2441,8 @@
 
   function pickMyLang(code) {
     if (!LANG_MAP[code]) return;
+    // 言語選択画面からのタップか（設定シートからの変更とは分ける）
+    const entering = !!($('#pLangPick') && !$('#pLangPick').classList.contains('hidden'));
     const changed = S.myLang !== code;
     S.myLang = code;
     saveSettings();
@@ -2527,6 +2466,17 @@
     }
     P.joined = true;
     closeSheet();
+    // 入室の1タップで音声もONにする
+    if (entering) enableSoundOnEntry();
+  }
+
+  // 入室の1タップで「言語を選ぶ＋音声をON」を済ませる。
+  // クリック処理と同じタスクの中で speak するので、iOS Safari でもそのまま音が出る。
+  function enableSoundOnEntry() {
+    S.pTts = true;
+    saveSettings();
+    applyParticipantLook();     // 🔊 音声 ON の表示にする
+    unlockVoice();              // 同じタスクで確認音声を鳴らし、音声を解除する
   }
 
   function enterStage() {
@@ -2826,24 +2776,6 @@
     try { syn.cancel(); } catch (e) {}
   }
 
-  // 実際に発話中／予約中のときだけ止める（OFF にした時の後始末用）。
-  // 何も鳴っていない時の cancel() は、Android Chrome で次の speak() まで無音にする原因になる。
-  function cancelSpeechIfBusy() {
-    VOICE.queue = [];
-    VOICE.speaking = false;
-    VOICE.spokeAt = 0;
-    clearTimeout(VOICE.diagTimer);
-    VOICE.diagTimer = null;
-    const syn = speechSynth();
-    if (!syn) return false;
-    let busy = false;
-    try { busy = !!(syn.speaking || syn.pending); } catch (e) { busy = false; }
-    if (!busy) return false;          // 鳴っていない → cancel しない（タップのジェスチャーを殺さない）
-    VOICE.canceledAt = Date.now();
-    try { syn.cancel(); } catch (e) {}
-    return true;
-  }
-
   function speakDelay() {
     return Math.max(0, 50 - (Date.now() - (VOICE.canceledAt || 0)));
   }
@@ -2884,7 +2816,7 @@
     speakOrDefer(u, clear, !!(opts && opts.sync));
   }
 
-  /* ---- 自己診断：タップしたのに音が出ない時、その場で原因を出す ---- */
+  /* ---- 音が出ないときの案内：無応答のときだけ短く1行 ---- */
   function setVoiceNotice(msg) {
     const el = $('#voiceHint');
     if (el) {
@@ -2893,117 +2825,41 @@
     }
   }
 
-  // 原因の文言（技術的な内訳は日本語のまま添える：設定画面の項目名が日本語のため）
-  function ttsDiagMessage(kind, detail) {
-    if (kind === 'novoices') return t('ttsNoVoices') + '（voices=0件）';
-    if (kind === 'error') return t('ttsError') + ': onerror: ' + detail;
-    return t('ttsSilent') + '（TTS応答なし: Android設定の「テキスト読み上げの出力」でGoogle音声エンジンと音量を確認してください）';
-  }
-
-  function showTtsDiag(kind, detail) {
-    const msg = ttsDiagMessage(kind, detail);
-    setVoiceNotice(msg);
-    toast(msg, 7000);
-  }
-
-  // u が 1.2 秒以内に onstart も onend も返さない／onerror が来たら原因を表示する
+  // 1.5秒たっても onstart も onend も返ってこない（またはエラーになった）ときにだけ、
+  // 「マナーモードと音量」を1行だけ出す。長い診断はしない。
   function diagnoseSpeech(u) {
     if (!u) return u;
     const st = { started: false, ended: false, shown: false };
     const prevStart = u.onstart, prevEnd = u.onend, prevErr = u.onerror;
-    const show = (kind, detail) => {
+    const show = () => {
       if (st.shown) return;
       st.shown = true;
       clearTimeout(VOICE.diagTimer);
       VOICE.diagTimer = null;
-      showTtsDiag(kind, detail);
+      if (A.role === 'participant') setVoiceNotice(t('voiceMuteHint'));
+      else toast('音が出ないときは、マナーモード解除と音量をご確認ください（iPhoneは消音スイッチで無音になります）', 5000);
     };
-    u.onstart = (ev) => { st.started = true; if (prevStart) prevStart(ev); };
+    u.onstart = (ev) => { st.started = true; setVoiceNotice(''); if (prevStart) prevStart(ev); };
     u.onend = (ev) => { st.ended = true; if (prevEnd) prevEnd(ev); };
     u.onerror = (ev) => {
       const err = (ev && (ev.error || ev.message)) || 'error';
       if (prevErr) prevErr(ev);
-      // 自分で止めただけ（cancel / interrupted）は「鳴らない」原因ではない
+      // 自分で止めただけ（cancel / interrupted）は「音が出ない」原因ではない
       if (/interrupt|cancel/i.test(String(err))) return;
-      show('error', String(err));
+      show();
     };
     clearTimeout(VOICE.diagTimer);
     VOICE.diagTimer = setTimeout(() => {
       VOICE.diagTimer = null;
       if (st.started || st.ended || st.shown) return;
-      refreshVoices();
-      if (!VOICE.voices || !VOICE.voices.length) { show('novoices'); return; }
-      show('silent');
-    }, 1200);
+      show();
+    }, 1500);
     return u;
   }
 
-  /* ---- 確認チャイム（Web Audio）----
-     タップの瞬間に「ピポッ」と2音鳴らし、スマホ本体から音が出るかを切り分ける。
-     鳴らせなくても無視する（読み上げの邪魔をしない）。 */
-  function playChime() {
-    try {
-      let ctx = VOICE.audio;
-      if (!ctx) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return false;
-        ctx = VOICE.audio = new AC();
-      }
-      if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
-        try { ctx.resume(); } catch (e) {}
-      }
-      const now = typeof ctx.currentTime === 'number' ? ctx.currentTime : 0;
-      [[880, 0], [1320, 0.14]].forEach(([freq, at]) => {
-        const t0 = now + at;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        if (osc.frequency && osc.frequency.setValueAtTime) osc.frequency.setValueAtTime(freq, t0);
-        else if (osc.frequency) osc.frequency.value = freq;
-        const g = gain && gain.gain;
-        if (g && g.setValueAtTime && g.exponentialRampToValueAtTime) {
-          g.setValueAtTime(0.0001, t0);
-          g.exponentialRampToValueAtTime(0.18, t0 + 0.012);
-          g.exponentialRampToValueAtTime(0.0001, t0 + 0.11);
-        } else if (g) {
-          g.value = 0.18;
-        }
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        if (osc.start) osc.start(t0);
-        if (osc.stop) osc.stop(t0 + 0.13);
-      });
-      return true;
-    } catch (e) {
-      return false;   // 音が出せない環境でも本体の動作は止めない
-    }
-  }
-
-  // 端末にその言語の声が1つでも入っているか（ローカル／ネットワークを問わず）
-  function hasVoiceFor(langCode) {
-    const L = langInfo(langCode);
-    if (!L) return false;
-    const want = String(L.bcp47).toLowerCase().replace('_', '-');
-    const prefix = want.split('-')[0];
-    return (VOICE.voices || []).some(v => {
-      const vl = String((v && v.lang) || '').toLowerCase().replace('_', '-');
-      return vl === want || vl.split('-')[0] === prefix;
-    });
-  }
-
-  // 一覧は取れているのにその言語の声が1つも無い → 端末の音声データ未導入かもしれない、とそっと案内
-  function warnIfNoVoice(langCode) {
-    if (!VOICE.voices || !VOICE.voices.length) return;     // まだ一覧が来ていないだけの可能性
-    if (hasVoiceFor(langCode)) return;
-    const key = String(langCode || 'en');
-    if (VOICE.warned[key]) return;
-    VOICE.warned[key] = true;
-    setTimeout(() => {
-      toast('この言語の読み上げ音声が端末に入っていないようです（Androidの「設定 → テキスト読み上げ」で追加できます）。訳は字幕でも読めます', 6000);
-    }, 1400);
-  }
-
-  // 音声ON：その場で短い確認音声を鳴らし、スピーカーから音が出るか確かめられるようにする
+  // 音声ON：タップと同じタスクで、そのまま短い確認音声を speak する
+  // （iOS Safari はタップの中で speechSynthesis.speak() を呼んだ時に音声を開く。
+  //   ここで AudioContext など他の音を鳴らすとオーディオセッションが競合して無音になるため、TTS だけにする）
   function unlockVoice() {
     if (!('speechSynthesis' in window)) {
       toast(t('voiceUnsupported'));
@@ -3014,15 +2870,8 @@
     const b = $('#btnVoice');
     if (b) b.classList.add('hidden');
     const lang = S.myLang || 'en';
-    // 1) タップの瞬間に確認チャイム（スマホ本体から音が出るか）
-    playChime();
-    // 2) 鳴っている時だけ止める（無音の cancel() は Android Chrome で次の発話を殺す）
-    cancelSpeechIfBusy();
-    // 3) 初回アンロックの発話は、タップと同じタスクで同期的に speak() する
-    //    1.2秒以内に反応が無ければ、原因を画面に出す（自己診断）
     speakNow(makeUtterance(t('speakOk'), lang), { sync: true, diag: true });
     requestWakeLock();
-    warnIfNoVoice(lang);
     toast(t('voiceOnToast'), 3000);
   }
 
@@ -3175,8 +3024,7 @@
       saveSettings();
       applyParticipantLook();
       if (S.pTts) {
-        // 音声ONを押したら、その場で確認チャイム＋選択中の言語の確認音声を鳴らす
-        // （スピーカーから実際に音が出るか、鳴らなければその原因もここで確かめられる）
+        // 音声ONを押したら、その場で選択中の言語の確認音声を鳴らす
         unlockVoice();
       } else {
         cancelSpeech();
@@ -3214,13 +3062,7 @@
     // 質問（双方向・フローティングマイク）
     $('#btnQAsk').addEventListener('click', openQaPop);
     $('#qClose').addEventListener('click', closeQaPop);
-    $('#qSend').addEventListener('click', sendQuestion);
     $('#qMic').addEventListener('click', toggleQMic);
-    $('#qKb').addEventListener('click', toggleQaType);
-    $('#qaTypeSend').addEventListener('click', sendTypedQuestion);
-    $('#qaTypeInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); sendTypedQuestion(); }
-    });
 
     // ガイド側：質問の読み上げ（任意・既定OFF）
     $('#btnQSpeak').addEventListener('click', () => {
@@ -3228,13 +3070,10 @@
       saveSettings();
       updateQSpeak();
       if (S.qSpeak && 'speechSynthesis' in window) {
-        // 押したジェスチャーのうちに解除して、確認チャイム＋短い確認音声を同期的に鳴らす
+        // 押したジェスチャーのうちに、短い確認音声をそのまま同期的に鳴らす
         VOICE.unlocked = true;
         refreshVoices();
-        playChime();
-        cancelSpeechIfBusy();
         speakNow(makeUtterance('質問の読み上げを開始します', 'ja'), { sync: true, diag: true });
-        warnIfNoVoice('ja');
         toast('ゲストの質問を日本語で読み上げます');
       } else if (!S.qSpeak) {
         stopGuideSpeak();

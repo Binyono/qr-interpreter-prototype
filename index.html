@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070a12">
 <meta name="description" content="QRコードを読み取るだけで使える、受信機不要のリアルタイムAI同時通訳（プロトタイプ）">
 <title>QR同時通訳 | リアルタイムAI通訳</title>
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c5cff'/%3E%3Ctext x='32' y='44' font-size='34' font-family='sans-serif' font-weight='bold' text-anchor='middle' fill='white'%3EQ%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -133,6 +133,7 @@
     <p class="lang-sub" data-i18n="langSub">Choose your language</p>
     <div id="langGrid" class="lang-grid"></div>
     <p class="lang-note" data-i18n="langNote">選ぶとすぐに字幕が届きます。あとから変更できます。</p>
+    <p id="pLangIosNote" class="lang-ios hidden" data-i18n="iosMuteNote">※iPhoneは側面の消音スイッチをOFFにすると音が出ます。</p>
   </div>
 
   <div id="pStage" class="p-stage hidden">
@@ -167,7 +168,6 @@
     <div class="qa-pop-head">
       <span id="qaPopTitle" data-i18n="askTitle">ガイドに質問</span>
       <div class="qa-pop-tools">
-        <button id="qKb" class="qa-pop-tool" type="button" data-i18n-aria="kbToggle" aria-label="キーボードで入力" title="キーボードで入力">⌨️</button>
         <button id="qClose" class="qa-pop-close" type="button" data-i18n-aria="close" aria-label="閉じる">✕</button>
       </div>
     </div>
@@ -178,14 +178,6 @@
     <p id="qHint" class="qa-hint" data-i18n="micHint">マイクを押して話す</p>
     <p id="qLive" class="qa-live" aria-live="polite"></p>
     <p id="qNotice" class="qa-notice hidden" data-i18n="qClosed">質問受付停止中</p>
-    <div id="qaTypeWrap" class="qa-type hidden">
-      <input id="qaTypeInput" class="qa-type-input" type="text" data-i18n-ph="typeHint" placeholder="質問を入力"
-             autocomplete="off" autocapitalize="sentences" enterkeyhint="send">
-      <button id="qaTypeSend" class="btn primary small qa-type-send" type="button" data-i18n="send">送信</button>
-    </div>
-    <div class="qa-pop-actions">
-      <button id="qSend" class="btn primary small" type="button" data-i18n="send">送信</button>
-    </div>
   </div>
 </section>
 
@@ -321,10 +313,10 @@
   <div class="sheet-body">
     <ol class="help-list">
       <li><b>配信を開始</b>を押すと、部屋コードとQRコードが出ます。</li>
-      <li>もう1台のスマホのカメラでQRを読み取り、開いたページで<b>言語を選ぶ</b>と字幕が届きます。</li>
+      <li>もう1台のスマホのカメラでQRを読み取り、開いたページで<b>言語を選ぶ</b>と、字幕と音声がその場で始まります（同じタップで音声もONになるので、スピーカーの許可操作は要りません。iPhoneは消音スイッチをOFFにすると音が出ます）。</li>
       <li>この端末の<b>マイク</b>を押して話すと、日本語が字幕になり、相手の言語に翻訳されて表示・読み上げされます。</li>
-      <li>ゲストは画面右下の<b>🎙️ 質問</b>を押すと、マイクのポップアップが開きます（文字入力なし）。マイクが点滅したら話すだけで、認識した質問がその言語のまま送られ、ガイドの画面に日本語訳が出ます。<b>✕ 閉じる</b>でまた小さなボタン戻ります。ガイドの人は<b>📩 ゲストからの質問</b>の「✓ 済」で消してください。受付はON/OFFできます。</li>
-      <li>参加者の画面は、上部の<b>🔊 音声 ON/OFF</b> と <b>⏩ 1.0x / 1.15x / 1.3x</b> で、文字とスピーカーの音声を同時に楽しめます。<b>音声ONを押した瞬間に確認音声が鳴る</b>ので、音が出るかどうかその場で分かります。</li>
+      <li>ゲストは画面右下の<b>🎙️ 質問</b>を押すとマイクのポップアップが開きます（マイクの許可はここで初めて聞かれます）。点滅したら話すだけで、認識した質問がその言語のまま送られ、ガイドの画面に日本語訳が出ます。話し終わると自動で送信されてポップアップも閉じます（送らずにやめるときは<b>✕</b>、途中で止めるときはマイクをもう一度）。ボタンや文字入力はありません。ガイドの人は<b>📩 ゲストからの質問</b>の「✓ 済」で消してください。受付はON/OFFできます。</li>
+      <li>参加者の画面は、上部の<b>🔊 音声 ON/OFF</b> と <b>⏩ 1.0x / 1.15x / 1.3x</b> で、文字とスピーカーの音声を同時に楽しめます。<b>音声ONを押した瞬間に確認音声が鳴る</b>ので、音が出るかどうかその場で分かります（音が出ないときはマナーモード解除と音量を。iPhoneは消音スイッチで無音になります）。</li>
       <li>本番の精度にするには、右上の⚙️で<b>OpenAI または Gemini のAPIキー</b>を入れてください。</li>
     </ol>
     <p class="muted small">マイクは HTTPS のページでのみ使えます（Netlify Drop 等にアップしたURL）。2台を同じWi-Fiにつなぐと接続が安定します。マイクが使えない環境でも、下の入力欄から日本語を送ってテストできます。</p>
@@ -335,6 +327,6 @@
 
 <script src="vendor/peerjs.min.js"></script>
 <script src="vendor/qrcode.js"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
