@@ -476,7 +476,8 @@
     watchdog: null,    // Android Chrome の無音停止対策
     canceledAt: 0,     // cancel() した時刻（直後の speak を 50ms 遅らせる）
     spokeAt: 0,        // 発話を始めた時刻（スタック検出用）
-    guard: null        // onend が来ないときの保険タイマー
+    guard: null,       // onend が来ないときの保険タイマー
+    warned: {}         // 「この言語の音声が無い」案内を出した言語
   };
 
   /* ---------------------------------------------------------
@@ -1026,17 +1027,25 @@
     }
     box.innerHTML = A.questions.slice().reverse().map(q => {
       const L = LANG_MAP[q.lang] || LANG_MAP.en;
-      let ja;
-      if (q.tr && q.tr.text) ja = esc(q.tr.text);
-      else if (q.state === 'error') ja = '（日本語に訳せませんでした）';
-      else ja = '翻訳中…';
-      const cls = 'q-ja' + (q.tr && q.tr.text ? (q.tr.degraded ? ' degraded' : '') : ' pending');
+      const hasTr = !!(q.tr && q.tr.text);
+      let ja, cls;
+      if (hasTr) {
+        ja = esc(q.tr.text);
+        cls = 'q-ja' + (q.tr.degraded ? ' degraded' : '');
+      } else if (q.state === 'error' || (q.tr && q.tr.failed)) {
+        ja = '日本語に訳せませんでした（原文を確認してください）';
+        cls = 'q-ja degraded';
+      } else {
+        ja = '翻訳中…';
+        cls = 'q-ja pending';
+      }
+      const label = hasTr ? '<span class="q-ja-label">🇯🇵 日本語訳</span>' : '';
       return '<article class="q-item" data-id="' + esc(q.id) + '">' +
         '<div class="q-head"><span class="q-lang">' + L.flag + ' ' + esc(L.ja) + '</span>' +
         '<span class="q-time">' + timeLabel(q.ts) + '</span>' +
         '<button class="q-done" type="button" data-id="' + esc(q.id) + '">✓ 済</button></div>' +
-        '<p class="q-text">' + esc(q.text) + '</p>' +
-        '<p class="' + cls + '">' + ja + '</p>' +
+        '<p class="q-text"><span class="q-src-label">原文</span>' + esc(q.text) + '</p>' +
+        '<p class="' + cls + '">' + label + ja + '</p>' +
       '</article>';
     }).join('');
   }
@@ -1065,7 +1074,7 @@
     // ガイドが設定している翻訳エンジンで、その場で日本語に訳す
     translateToJa(text, item.lang).then(res => {
       item.tr = res;
-      item.state = 'done';
+      item.state = (res && (res.failed || !res.text)) ? 'error' : 'done';
       renderQuestions();
       // 任意：ゲストの質問を日本語で読み上げる（既定OFF）
       if (S.qSpeak && res && res.text) guideSpeak(res.text);
@@ -1147,7 +1156,7 @@
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
     const t = d && d.responseData && d.responseData.translatedText;
-    if (!t || /MYMEMORY WARNING/i.test(t) || String(d.responseStatus) !== '200') throw new Error('no result');
+    if (!t || /MYMEMORY WARNING/i.test(t) || /INVALID (SOURCE|TARGET) LANGUAGE/i.test(t) || String(d.responseStatus) !== '200') throw new Error('no result');
     return cleanTr(t);
   }
 
@@ -1268,35 +1277,74 @@
 
   /* ---------------- ゲストの質問 → 日本語 ---------------- */
   function buildReverseSystemPrompt(srcLang) {
-    const L = LANG_MAP[srcLang] || LANG_MAP.en;
+    const L = LANG_MAP[srcLang];
+    const src = L ? L.native + '（' + L.ja + '）' : 'ゲストの言語（申告なし・自動判定）';
     return [
-      'あなたは国際会議の同時通訳者です。ゲストが話した ' + L.native + '（' + L.ja + '）の質問を、自然な日本語に訳してください。',
+      'あなたは国際会議の同時通訳者です。ゲストが話した' + src + 'の質問を、自然な日本語に訳してください。',
       '出力は日本語訳だけ。前置き・解説・括弧書き・原文の繰り返しは書かない。',
       'ガイドがすぐ読める、簡潔な話し言葉の日本語にする。',
+      '原文がすでに日本語なら、意味を変えず自然な日本語に整えるだけでよい。',
       '原文にない情報を足さない。数字・人名・社名・日時は正確に。'
     ].join('\n');
   }
 
-  async function translateToJa(text, srcLang) {
-    const from = LANG_MAP[srcLang] ? srcLang : 'en';
-    if (from === 'ja') return { text: String(text), engine: 'none', engineName: '日本語', direct: true };
+  // 日本語の文字（ひらがな・カタカナ・漢字・半角カナ）を含むか
+  function hasJapanese(text) {
+    return /[\u3040-\u309F\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF66-\uFF9F]/.test(String(text || ''));
+  }
 
-    if (S.engine === 'openai' && String(S.openaiKey || '').trim()) {
-      try { return await openaiTranslateToJa(text, from); }
-      catch (e) { noteEngineError('OpenAI', e, true); }
-    } else if (S.engine === 'gemini' && String(S.geminiKey || '').trim()) {
-      try { return await geminiTranslateToJa(text, from); }
-      catch (e) { noteEngineError('Gemini', e, true); }
+  function sameTr(a, b) {
+    const norm = (s) => String(s == null ? '' : s).replace(/[\s\u3000]+/g, ' ').trim().toLowerCase();
+    return norm(a) === norm(b);
+  }
+
+  // 訳として受け取れるか。英語などがそのまま返ってきたら「訳」として並べない（誤解を防ぐ）。
+  function acceptJa(out, body) {
+    const t = String(out == null ? '' : out).trim();
+    if (!t) return null;
+    if (sameTr(t, body)) {
+      // 原文が日本語なら「同じ」が正しい。英語などのまま返った場合は翻訳失敗。
+      if (hasJapanese(body)) return { text: t, engine: 'none', engineName: '日本語', direct: true };
+      return null;
     }
+    return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
+  }
+
+  async function translateToJa(text, srcLang) {
+    const body = String(text == null ? '' : text).trim();
+    if (!body) return { text: '', engine: 'none', engineName: '日本語', direct: true, empty: true };
+    const declared = LANG_MAP[srcLang] ? srcLang : (srcLang === 'ja' ? 'ja' : '');
+    // 日本語→日本語のショートサーキットは、本当に日本語の文字が入っている時だけ
+    if (declared === 'ja' && hasJapanese(body)) {
+      return { text: body, engine: 'none', engineName: '日本語', direct: true };
+    }
+
+    const aiFrom = declared || 'auto';
+    if (S.engine === 'openai' && String(S.openaiKey || '').trim()) {
+      try {
+        const res = await openaiTranslateToJa(body, aiFrom);
+        const fin = acceptJa(res.text, body);
+        if (fin) return Object.assign({}, res, fin);
+      } catch (e) { noteEngineError('OpenAI', e, true); }
+    } else if (S.engine === 'gemini' && String(S.geminiKey || '').trim()) {
+      try {
+        const res = await geminiTranslateToJa(body, aiFrom);
+        const fin = acceptJa(res.text, body);
+        if (fin) return Object.assign({}, res, fin);
+      } catch (e) { noteEngineError('Gemini', e, true); }
+    }
+    // ゲストが実際にどの言語で話しても日本語に訳す：原文の言語は自動判定（sl=auto）
     try {
-      const t = await googlePublicTranslate(text, from, 'ja');
-      return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
+      const fin = acceptJa(await googlePublicTranslate(body, 'auto', 'ja'), body);
+      if (fin) return fin;
     } catch (e) { /* 次へ */ }
+    // MyMemory は sl=auto を受け付けない（'AUTO' IS AN INVALID SOURCE LANGUAGE）ので 'Autodetect' を使う
     try {
-      const t = await mymemoryTranslateFrom(text, from, 'ja');
-      return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
+      const fin = acceptJa(await mymemoryTranslateFrom(body, 'Autodetect', 'ja'), body);
+      if (fin) return fin;
     } catch (e) { /* 次へ */ }
-    return { text: String(text), engine: 'offline', engineName: '翻訳できません', degraded: true };
+    // どれも駄目なら、英語を「訳」として並べず「訳せなかった」と分かる形で返す
+    return { text: '', engine: 'offline', engineName: '翻訳できません', degraded: true, failed: true };
   }
 
   /* ---------------------------------------------------------
@@ -2484,20 +2532,55 @@
     }, 4000);
   }
 
+  function speechSynth() {
+    try { return window.speechSynthesis || null; } catch (e) { return null; }
+  }
+
   // cancel() の直後に speak() すると Android Chrome で次の発話が消えるため、時刻を控えておく
   function cancelSpeech() {
     VOICE.queue = [];
     VOICE.speaking = false;
+    VOICE.spokeAt = 0;
+    const syn = speechSynth();
+    if (!syn) return;
     VOICE.canceledAt = Date.now();
-    try { window.speechSynthesis.cancel(); } catch (e) {}
+    try { syn.cancel(); } catch (e) {}
+  }
+
+  // 実際に発話中／予約中のときだけ止める（OFF にした時の後始末用）。
+  // 何も鳴っていない時の cancel() は、Android Chrome で次の speak() まで無音にする原因になる。
+  function cancelSpeechIfBusy() {
+    VOICE.queue = [];
+    VOICE.speaking = false;
+    VOICE.spokeAt = 0;
+    const syn = speechSynth();
+    if (!syn) return false;
+    let busy = false;
+    try { busy = !!(syn.speaking || syn.pending); } catch (e) { busy = false; }
+    if (!busy) return false;          // 鳴っていない → cancel しない（タップのジェスチャーを殺さない）
+    VOICE.canceledAt = Date.now();
+    try { syn.cancel(); } catch (e) {}
+    return true;
   }
 
   function speakDelay() {
     return Math.max(0, 50 - (Date.now() - (VOICE.canceledAt || 0)));
   }
 
-  // 1件を確実に鳴らす（cancel 直後でも 50ms 待ってから speak する）
-  function speakNow(u) {
+  // 発話を鳴らす。forceSync=true なら今のタスク（タップ＝ユーザージェスチャー内）で即 speak()。
+  // 50ms 待つのは cancel() の直後だけで、それ以外は待たずに鳴らす（ジェスチャーの文脈を切らない）。
+  function speakOrDefer(u, onFail, forceSync) {
+    const delay = forceSync ? 0 : speakDelay();
+    const fire = () => {
+      try { window.speechSynthesis.speak(u); }
+      catch (e) { if (onFail) onFail(); }
+    };
+    if (delay <= 0) { fire(); return; }
+    setTimeout(fire, delay);
+  }
+
+  // 1件を確実に鳴らす（cancel 直後だけ 50ms 待つ。opts.sync で必ず同期）
+  function speakNow(u, opts) {
     if (!u) return;
     VOICE.speaking = true;
     VOICE.spokeAt = Date.now();
@@ -2512,10 +2595,31 @@
     // onend が来ない端末でも「話し中」のまま固まらないようにする
     clearTimeout(VOICE.guard);
     VOICE.guard = setTimeout(clear, Math.max(4000, String(u.text || '').length * 200 + 2000));
+    speakOrDefer(u, clear, !!(opts && opts.sync));
+  }
+
+  // 端末にその言語の声が1つでも入っているか（ローカル／ネットワークを問わず）
+  function hasVoiceFor(langCode) {
+    const L = langInfo(langCode);
+    if (!L) return false;
+    const want = String(L.bcp47).toLowerCase().replace('_', '-');
+    const prefix = want.split('-')[0];
+    return (VOICE.voices || []).some(v => {
+      const vl = String((v && v.lang) || '').toLowerCase().replace('_', '-');
+      return vl === want || vl.split('-')[0] === prefix;
+    });
+  }
+
+  // 一覧は取れているのにその言語の声が1つも無い → 端末の音声データ未導入かもしれない、とそっと案内
+  function warnIfNoVoice(langCode) {
+    if (!VOICE.voices || !VOICE.voices.length) return;     // まだ一覧が来ていないだけの可能性
+    if (hasVoiceFor(langCode)) return;
+    const key = String(langCode || 'en');
+    if (VOICE.warned[key]) return;
+    VOICE.warned[key] = true;
     setTimeout(() => {
-      try { window.speechSynthesis.speak(u); }
-      catch (e) { clear(); }
-    }, speakDelay());
+      toast('この言語の読み上げ音声が端末に入っていないようです（Androidの「設定 → テキスト読み上げ」で追加できます）。訳は字幕でも読めます', 6000);
+    }, 1400);
   }
 
   // 音声ON：その場で短い確認音声を鳴らし、スピーカーから音が出るか確かめられるようにする
@@ -2528,9 +2632,13 @@
     VOICE.unlocked = true;
     const b = $('#btnVoice');
     if (b) b.classList.add('hidden');
-    cancelSpeech();
-    speakNow(makeUtterance(t('speakOk'), S.myLang || 'en'));
+    const lang = S.myLang || 'en';
+    // 鳴っている時だけ止める（無音の cancel() は Android Chrome で次の発話を殺す）
+    cancelSpeechIfBusy();
+    // 初回アンロックの発話は、タップと同じタスクで同期的に speak() する
+    speakNow(makeUtterance(t('speakOk'), lang), { sync: true });
     requestWakeLock();
+    warnIfNoVoice(lang);
     toast(t('voiceOnToast'), 3000);
   }
 
@@ -2569,10 +2677,8 @@
     // onend が来ない端末でも次の文へ進める（発話スタックの防止）
     clearTimeout(VOICE.guard);
     VOICE.guard = setTimeout(done, Math.max(4000, String(u.text || '').length * 200 + 2000));
-    setTimeout(() => {
-      try { window.speechSynthesis.speak(u); }
-      catch (e) { done(); }
-    }, speakDelay());
+    // cancel() 直後だけ待つ。それ以外は即 speak する（余計な setTimeout で無音にならないように）
+    speakOrDefer(u, done, false);
   }
 
   // ガイド側：ゲストの質問（日本語訳）を読み上げる
@@ -2733,10 +2839,12 @@
       saveSettings();
       updateQSpeak();
       if (S.qSpeak && 'speechSynthesis' in window) {
-        // 押したジェスチャーのうちに解除して、短い確認音声を鳴らす
+        // 押したジェスチャーのうちに解除して、短い確認音声を同期的に鳴らす
         VOICE.unlocked = true;
-        cancelSpeech();
-        speakNow(makeUtterance('質問の読み上げを開始します', 'ja'));
+        refreshVoices();
+        cancelSpeechIfBusy();
+        speakNow(makeUtterance('質問の読み上げを開始します', 'ja'), { sync: true });
+        warnIfNoVoice('ja');
         toast('ゲストの質問を日本語で読み上げます');
       } else if (!S.qSpeak) {
         stopGuideSpeak();
