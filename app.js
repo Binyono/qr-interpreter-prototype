@@ -28,6 +28,301 @@
   ];
   const LANG_MAP = Object.fromEntries(LANGS.map(l => [l.code, l]));
 
+  /* ---------------------------------------------------------
+     0-b. 参加者画面の多言語辞書（12言語）
+     参加者が選んだ言語で、ボタン・ラベル・案内文をすべて切り替える
+  --------------------------------------------------------- */
+  const TEXTS = {
+    en: {
+      langTitle: 'Choose your language', langSub: 'Tap a language to start',
+      langNote: 'Captions start right away. You can change this later.',
+      voiceEnable: '🔈 Turn on sound', voiceOn: '🔊 Sound ON', voiceOff: '🔇 Sound OFF',
+      rate: 'Speed', font: 'Text size', jump: 'Latest ↓',
+      displayBoth: 'Translation + original', displayTr: 'Translation only', displayOrig: 'Original only',
+      connecting: 'Connecting…', connected: 'Connected',
+      disconnected: 'Disconnected. Reconnecting…', netError: 'Network error. Reconnecting…',
+      waitGuide: 'Waiting for the guide', libFail: 'Could not load the connection library',
+      cannotConnect: 'Cannot connect',
+      waitStart: 'Waiting for the guide to start…', waitLang: 'Waiting for captions in this language…',
+      liveLabel: '● Live interpreting', listening: 'Listening…', translating: 'Translating…',
+      askShort: 'Ask', askTitle: 'Ask the guide', micHint: 'Tap the mic and speak',
+      micListening: 'Listening… tap to stop', send: 'Send', close: 'Close', sent: 'Question sent',
+      qClosed: 'Questions are closed', qClosedHint: 'The guide is not taking questions right now.',
+      qNoConn: 'Not connected yet. Please wait a moment.',
+      micUnsupported: 'Voice input is not available on this device.',
+      voiceUnsupported: 'This device cannot read text aloud.',
+      voiceOnToast: 'Sound is on. You will hear the translation from the speaker.',
+      speakOk: 'Sound on',
+      setTitle: 'Settings', setDisplay: 'Display', setCaptionStyle: 'Captions',
+      optBoth: 'Translation + Japanese original', optTr: 'Translation only (large)', optOrig: 'Japanese original only',
+      setFontSize: 'Text size', setLang: 'Language', setLangNote: 'New captions will switch to this language.',
+      setVoice: 'Speak aloud', setAutoTts: 'Read captions aloud (TTS)',
+      setVoiceNote: 'Plays from the phone speaker. The screen stays awake while sound is on.'
+    },
+    'zh-CN': {
+      langTitle: '请选择你的语言', langSub: '点一下即可开始',
+      langNote: '选好后马上就能看到字幕，之后也可以更改。',
+      voiceEnable: '🔈 开启声音', voiceOn: '🔊 声音开', voiceOff: '🔇 声音关',
+      rate: '速度', font: '字体大小', jump: '最新 ↓',
+      displayBoth: '译文＋原文', displayTr: '只看译文', displayOrig: '只看原文',
+      connecting: '连接中…', connected: '已连接',
+      disconnected: '连接断开，正在重连…', netError: '网络错误，正在重连…',
+      waitGuide: '等待主持人开始', libFail: '无法加载连接组件', cannotConnect: '无法连接',
+      waitStart: '正在等待主持人开始…', waitLang: '正在等待这种语言的字幕…',
+      liveLabel: '● 实时翻译中', listening: '正在听…', translating: '翻译中…',
+      askShort: '提问', askTitle: '向主持人提问', micHint: '按下麦克风后说话',
+      micListening: '正在听…点一下可停止', send: '发送', close: '关闭', sent: '已发送提问',
+      qClosed: '已停止接收提问', qClosedHint: '主持人现在不接受提问。',
+      qNoConn: '还没有连接上，请稍等。',
+      micUnsupported: '此设备无法使用语音输入。', voiceUnsupported: '此设备无法朗读文字。',
+      voiceOnToast: '声音已开启，会从扬声器播放译文。', speakOk: '声音已开启',
+      setTitle: '设置', setDisplay: '显示', setCaptionStyle: '字幕',
+      optBoth: '译文＋日文原文', optTr: '只看译文（大字）', optOrig: '只看日文原文',
+      setFontSize: '字体大小', setLang: '语言', setLangNote: '之后到达的字幕会切换成这个语言。',
+      setVoice: '朗读', setAutoTts: '自动朗读字幕（TTS）',
+      setVoiceNote: '从手机扬声器播放。开启声音时屏幕不会熄灭。'
+    },
+    'zh-TW': {
+      langTitle: '請選擇你的語言', langSub: '點一下即可開始',
+      langNote: '選好後馬上就能看到字幕，之後也可以更改。',
+      voiceEnable: '🔈 開啟聲音', voiceOn: '🔊 聲音開', voiceOff: '🔇 聲音關',
+      rate: '速度', font: '字體大小', jump: '最新 ↓',
+      displayBoth: '譯文＋原文', displayTr: '只看譯文', displayOrig: '只看原文',
+      connecting: '連線中…', connected: '已連線',
+      disconnected: '連線中斷，正在重連…', netError: '網路錯誤，正在重連…',
+      waitGuide: '等待主持人開始', libFail: '無法載入連線元件',
+      waitStart: '正在等待主持人開始…', waitLang: '正在等待這種語言的字幕…',
+      liveLabel: '● 即時翻譯中', listening: '正在聽…', translating: '翻譯中…',
+      askShort: '提問', askTitle: '向主持人提問', micHint: '按下麥克風後說話',
+      micListening: '正在聽…點一下可停止', send: '傳送', close: '關閉', sent: '已送出提問',
+      qClosed: '已停止接收提問', qClosedHint: '主持人現在不接受提問。',
+      qNoConn: '還沒連上，請稍等。',
+      micUnsupported: '此裝置無法使用語音輸入。', voiceUnsupported: '此裝置無法朗讀文字。',
+      voiceOnToast: '聲音已開啟，會從喇叭播放譯文。', speakOk: '聲音已開啟',
+      setTitle: '設定', setDisplay: '顯示', setCaptionStyle: '字幕',
+      optBoth: '譯文＋日文原文', optTr: '只看譯文（大字）', optOrig: '只看日文原文',
+      setFontSize: '字體大小', setLang: '語言', setLangNote: '之後到達的字幕會切換成這個語言。',
+      setVoice: '朗讀', setAutoTts: '自動朗讀字幕（TTS）',
+      setVoiceNote: '從手機喇叭播放。開啟聲音時螢幕不會熄滅。'
+    },
+    ko: {
+      langTitle: '언어를 선택해 주세요', langSub: '누르면 바로 시작됩니다',
+      langNote: '선택하면 바로 자막이 표시됩니다. 나중에 바꿀 수 있습니다.',
+      voiceEnable: '🔈 소리 켜기', voiceOn: '🔊 소리 켜짐', voiceOff: '🔇 소리 꺼짐',
+      rate: '속도', font: '글자 크기', jump: '최신 ↓',
+      displayBoth: '번역＋원문', displayTr: '번역만', displayOrig: '원문만',
+      connecting: '연결 중…', connected: '연결되었습니다',
+      disconnected: '연결이 끊겼습니다. 다시 연결 중…', netError: '통신 오류. 다시 연결 중…',
+      waitGuide: '가이드 시작을 기다리는 중', libFail: '연결 라이브러리를 불러오지 못했습니다',
+      waitStart: '가이드가 시작되기를 기다리고 있습니다…', waitLang: '이 언어의 자막을 기다리고 있습니다…',
+      liveLabel: '● 동시 통역 중', listening: '듣는 중…', translating: '번역 중…',
+      askShort: '질문', askTitle: '가이드에게 질문', micHint: '마이크를 누르고 말하세요',
+      micListening: '듣는 중… 누르면 멈춥니다', send: '보내기', close: '닫기', sent: '질문을 보냈습니다',
+      qClosed: '질문 접수 중지', qClosedHint: '가이드가 지금은 질문을 받지 않습니다.',
+      qNoConn: '아직 연결되지 않았습니다. 잠시 기다려 주세요.',
+      micUnsupported: '이 기기에서는 음성 입력을 쓸 수 없습니다.',
+      voiceUnsupported: '이 기기는 읽어주기를 지원하지 않습니다.',
+      voiceOnToast: '소리를 켰습니다. 스피커로 통역이 나옵니다.', speakOk: '소리 켜짐',
+      setTitle: '설정', setDisplay: '표시', setCaptionStyle: '자막',
+      optBoth: '번역＋일본어 원문', optTr: '번역만 (크게)', optOrig: '일본어 원문만',
+      setFontSize: '글자 크기', setLang: '언어', setLangNote: '이후 자막이 이 언어로 바뀝니다.',
+      setVoice: '읽어주기', setAutoTts: '자막 자동 읽기 (TTS)',
+      setVoiceNote: '휴대폰 스피커로 나옵니다. 소리가 켜져 있는 동안 화면이 꺼지지 않습니다.'
+    },
+    es: {
+      langTitle: 'Elige tu idioma', langSub: 'Toca un idioma para empezar',
+      langNote: 'Los subtítulos empiezan al instante. Puedes cambiarlo después.',
+      voiceEnable: '🔈 Activar el sonido', voiceOn: '🔊 Sonido ON', voiceOff: '🔇 Sonido OFF',
+      rate: 'Velocidad', font: 'Tamaño de letra', jump: 'Lo último ↓',
+      displayBoth: 'Traducción + original', displayTr: 'Solo traducción', displayOrig: 'Solo original',
+      connecting: 'Conectando…', connected: 'Conectado',
+      disconnected: 'Desconectado. Reconectando…', netError: 'Error de red. Reconectando…',
+      waitGuide: 'Esperando al guía', libFail: 'No se pudo cargar la conexión', cannotConnect: 'No se puede conectar',
+      waitStart: 'Esperando a que el guía empiece…', waitLang: 'Esperando subtítulos en este idioma…',
+      liveLabel: '● Interpretación en vivo', listening: 'Escuchando…', translating: 'Traduciendo…',
+      askShort: 'Preguntar', askTitle: 'Pregunta al guía', micHint: 'Toca el micrófono y habla',
+      micListening: 'Escuchando… toca para parar', send: 'Enviar', close: 'Cerrar', sent: 'Pregunta enviada',
+      qClosed: 'Preguntas cerradas', qClosedHint: 'El guía no acepta preguntas ahora mismo.',
+      qNoConn: 'Aún no hay conexión. Espera un momento.',
+      micUnsupported: 'Este dispositivo no admite entrada de voz.',
+      voiceUnsupported: 'Este dispositivo no puede leer en voz alta.',
+      voiceOnToast: 'Sonido activado. Oirás la traducción por el altavoz.', speakOk: 'Sonido activado',
+      setTitle: 'Ajustes', setDisplay: 'Pantalla', setCaptionStyle: 'Subtítulos',
+      optBoth: 'Traducción + original japonés', optTr: 'Solo traducción (grande)', optOrig: 'Solo original japonés',
+      setFontSize: 'Tamaño de letra', setLang: 'Idioma', setLangNote: 'Los próximos subtítulos cambiarán a este idioma.',
+      setVoice: 'Lectura en voz alta', setAutoTts: 'Leer los subtítulos (TTS)',
+      setVoiceNote: 'Suena por el altavoz del teléfono. La pantalla no se apaga mientras el sonido está activo.'
+    },
+    fr: {
+      langTitle: 'Choisissez votre langue', langSub: 'Touchez une langue pour commencer',
+      langNote: 'Les sous-titres démarrent tout de suite. Modifiable ensuite.',
+      voiceEnable: '🔈 Activer le son', voiceOn: '🔊 Son ON', voiceOff: '🔇 Son OFF',
+      rate: 'Vitesse', font: 'Taille du texte', jump: 'Plus récent ↓',
+      displayBoth: 'Traduction + original', displayTr: 'Traduction seule', displayOrig: 'Original seul',
+      connecting: 'Connexion…', connected: 'Connecté',
+      disconnected: 'Déconnecté. Reconnexion…', netError: 'Erreur réseau. Reconnexion…',
+      waitGuide: 'En attente du guide', libFail: 'Impossible de charger la connexion', cannotConnect: 'Connexion impossible',
+      waitStart: 'En attente du démarrage du guide…', waitLang: 'En attente des sous-titres dans cette langue…',
+      liveLabel: '● Interprétation en direct', listening: 'Écoute…', translating: 'Traduction…',
+      askShort: 'Demander', askTitle: 'Poser une question', micHint: 'Touchez le micro et parlez',
+      micListening: 'Écoute… touchez pour arrêter', send: 'Envoyer', close: 'Fermer', sent: 'Question envoyée',
+      qClosed: 'Questions fermées', qClosedHint: 'Le guide ne prend pas de questions pour le moment.',
+      qNoConn: 'Pas encore connecté. Patientez un instant.',
+      micUnsupported: 'La saisie vocale n’est pas disponible sur cet appareil.',
+      voiceUnsupported: 'Cet appareil ne peut pas lire le texte à voix haute.',
+      voiceOnToast: 'Son activé. La traduction sort par le haut-parleur.', speakOk: 'Son activé',
+      setTitle: 'Réglages', setDisplay: 'Affichage', setCaptionStyle: 'Sous-titres',
+      optBoth: 'Traduction + original japonais', optTr: 'Traduction seule (grande)', optOrig: 'Original japonais seul',
+      setFontSize: 'Taille du texte', setLang: 'Langue', setLangNote: 'Les prochains sous-titres passeront dans cette langue.',
+      setVoice: 'Lecture à voix haute', setAutoTts: 'Lire les sous-titres (TTS)',
+      setVoiceNote: 'Sort par le haut-parleur du téléphone. L’écran reste allumé quand le son est actif.'
+    },
+    de: {
+      langTitle: 'Wählen Sie Ihre Sprache', langSub: 'Sprache antippen und loslegen',
+      langNote: 'Die Untertitel starten sofort. Später änderbar.',
+      voiceEnable: '🔈 Ton einschalten', voiceOn: '🔊 Ton AN', voiceOff: '🔇 Ton AUS',
+      rate: 'Tempo', font: 'Schriftgröße', jump: 'Neueste ↓',
+      displayBoth: 'Übersetzung + Original', displayTr: 'Nur Übersetzung', displayOrig: 'Nur Original',
+      connecting: 'Verbinden…', connected: 'Verbunden',
+      disconnected: 'Getrennt. Verbinde neu…', netError: 'Netzwerkfehler. Verbinde neu…',
+      waitGuide: 'Warte auf den Guide', libFail: 'Verbindungsbibliothek nicht geladen', cannotConnect: 'Keine Verbindung möglich',
+      waitStart: 'Warte, bis der Guide startet…', waitLang: 'Warte auf Untertitel in dieser Sprache…',
+      liveLabel: '● Live-Übersetzung', listening: 'Höre zu…', translating: 'Übersetze…',
+      askShort: 'Fragen', askTitle: 'Guide fragen', micHint: 'Mikrofon antippen und sprechen',
+      micListening: 'Höre zu… zum Stoppen antippen', send: 'Senden', close: 'Schließen', sent: 'Frage gesendet',
+      qClosed: 'Fragen geschlossen', qClosedHint: 'Der Guide nimmt gerade keine Fragen an.',
+      qNoConn: 'Noch nicht verbunden. Bitte kurz warten.',
+      micUnsupported: 'Spracheingabe ist auf diesem Gerät nicht verfügbar.',
+      voiceUnsupported: 'Dieses Gerät kann Text nicht vorlesen.',
+      voiceOnToast: 'Ton ist an. Die Übersetzung kommt aus dem Lautsprecher.', speakOk: 'Ton an',
+      setTitle: 'Einstellungen', setDisplay: 'Anzeige', setCaptionStyle: 'Untertitel',
+      optBoth: 'Übersetzung + japanisches Original', optTr: 'Nur Übersetzung (groß)', optOrig: 'Nur japanisches Original',
+      setFontSize: 'Schriftgröße', setLang: 'Sprache', setLangNote: 'Neue Untertitel erscheinen in dieser Sprache.',
+      setVoice: 'Vorlesen', setAutoTts: 'Untertitel vorlesen (TTS)',
+      setVoiceNote: 'Ton kommt aus dem Telefonlautsprecher. Der Bildschirm bleibt an, solange Ton aktiv ist.'
+    },
+    pt: {
+      langTitle: 'Escolha o seu idioma', langSub: 'Toque no idioma para começar',
+      langNote: 'As legendas começam na hora. Dá para mudar depois.',
+      voiceEnable: '🔈 Ativar o som', voiceOn: '🔊 Som LIG', voiceOff: '🔇 Som DESL',
+      rate: 'Velocidade', font: 'Tamanho do texto', jump: 'Mais recente ↓',
+      displayBoth: 'Tradução + original', displayTr: 'Só tradução', displayOrig: 'Só original',
+      connecting: 'Conectando…', connected: 'Conectado',
+      disconnected: 'Desconectado. Reconectando…', netError: 'Erro de rede. Reconectando…',
+      waitGuide: 'Aguardando o guia', libFail: 'Não foi possível carregar a conexão', cannotConnect: 'Não é possível conectar',
+      waitStart: 'Aguardando o guia começar…', waitLang: 'Aguardando legendas neste idioma…',
+      liveLabel: '● Interpretação ao vivo', listening: 'Ouvindo…', translating: 'Traduzindo…',
+      askShort: 'Perguntar', askTitle: 'Pergunte ao guia', micHint: 'Toque no microfone e fale',
+      micListening: 'Ouvindo… toque para parar', send: 'Enviar', close: 'Fechar', sent: 'Pergunta enviada',
+      qClosed: 'Perguntas fechadas', qClosedHint: 'O guia não está aceitando perguntas agora.',
+      qNoConn: 'Ainda não conectado. Aguarde um instante.',
+      micUnsupported: 'Entrada de voz não disponível neste aparelho.',
+      voiceUnsupported: 'Este aparelho não lê texto em voz alta.',
+      voiceOnToast: 'Som ativado. A tradução sai pelo alto-falante.', speakOk: 'Som ativado',
+      setTitle: 'Ajustes', setDisplay: 'Tela', setCaptionStyle: 'Legendas',
+      optBoth: 'Tradução + original em japonês', optTr: 'Só tradução (grande)', optOrig: 'Só original em japonês',
+      setFontSize: 'Tamanho do texto', setLang: 'Idioma', setLangNote: 'As próximas legendas passam a usar este idioma.',
+      setVoice: 'Leitura em voz alta', setAutoTts: 'Ler as legendas (TTS)',
+      setVoiceNote: 'Sai pelo alto-falante do celular. A tela fica acesa enquanto o som está ativo.'
+    },
+    it: {
+      langTitle: 'Scegli la tua lingua', langSub: 'Tocca una lingua per iniziare',
+      langNote: 'I sottotitoli partono subito. Puoi cambiarli dopo.',
+      voiceEnable: '🔈 Attiva l’audio', voiceOn: '🔊 Audio ON', voiceOff: '🔇 Audio OFF',
+      rate: 'Velocità', font: 'Dimensione testo', jump: 'Ultimo ↓',
+      displayBoth: 'Traduzione + originale', displayTr: 'Solo traduzione', displayOrig: 'Solo originale',
+      connecting: 'Connessione…', connected: 'Connesso',
+      disconnected: 'Disconnesso. Riconnessione…', netError: 'Errore di rete. Riconnessione…',
+      waitGuide: 'In attesa della guida', libFail: 'Impossibile caricare la connessione', cannotConnect: 'Connessione impossibile',
+      waitStart: 'In attesa che la guida inizi…', waitLang: 'In attesa dei sottotitoli in questa lingua…',
+      liveLabel: '● Interpretariato dal vivo', listening: 'In ascolto…', translating: 'Traduzione…',
+      askShort: 'Chiedi', askTitle: 'Chiedi alla guida', micHint: 'Tocca il microfono e parla',
+      micListening: 'In ascolto… tocca per fermare', send: 'Invia', close: 'Chiudi', sent: 'Domanda inviata',
+      qClosed: 'Domande chiuse', qClosedHint: 'La guida non accetta domande in questo momento.',
+      qNoConn: 'Non ancora connesso. Attendi un momento.',
+      micUnsupported: 'L’input vocale non è disponibile su questo dispositivo.',
+      voiceUnsupported: 'Questo dispositivo non legge il testo ad alta voce.',
+      voiceOnToast: 'Audio attivo. La traduzione esce dall’altoparlante.', speakOk: 'Audio attivo',
+      setTitle: 'Impostazioni', setDisplay: 'Schermo', setCaptionStyle: 'Sottotitoli',
+      optBoth: 'Traduzione + originale giapponese', optTr: 'Solo traduzione (grande)', optOrig: 'Solo originale giapponese',
+      setFontSize: 'Dimensione testo', setLang: 'Lingua', setLangNote: 'I prossimi sottotitoli useranno questa lingua.',
+      setVoice: 'Lettura ad alta voce', setAutoTts: 'Leggi i sottotitoli (TTS)',
+      setVoiceNote: 'Esce dall’altoparlante del telefono. Lo schermo resta acceso con l’audio attivo.'
+    },
+    th: {
+      langTitle: 'เลือกภาษาของคุณ', langSub: 'แตะภาษาเพื่อเริ่ม',
+      langNote: 'เลือกแล้วคำบรรยายจะขึ้นทันที เปลี่ยนภายหลังได้',
+      voiceEnable: '🔈 เปิดเสียง', voiceOn: '🔊 เสียงเปิด', voiceOff: '🔇 เสียงปิด',
+      rate: 'ความเร็ว', font: 'ขนาดตัวอักษร', jump: 'ล่าสุด ↓',
+      displayBoth: 'คำแปล＋ต้นฉบับ', displayTr: 'คำแปลเท่านั้น', displayOrig: 'ต้นฉบับเท่านั้น',
+      connecting: 'กำลังเชื่อมต่อ…', connected: 'เชื่อมต่อแล้ว',
+      disconnected: 'หลุดการเชื่อมต่อ กำลังเชื่อมใหม่…', netError: 'เครือข่ายขัดข้อง กำลังเชื่อมใหม่…',
+      waitGuide: 'รอไกด์เริ่ม', libFail: 'โหลดไลบรารีการเชื่อมต่อไม่ได้', cannotConnect: 'เชื่อมต่อไม่ได้',
+      waitStart: 'กำลังรอให้ไกด์เริ่ม…', waitLang: 'กำลังรอคำบรรยายภาษานี้…',
+      liveLabel: '● กำลังแปลสด', listening: 'กำลังฟัง…', translating: 'กำลังแปล…',
+      askShort: 'ถาม', askTitle: 'ถามไกด์', micHint: 'แตะไมโครโฟนแล้วพูด',
+      micListening: 'กำลังฟัง… แตะเพื่อหยุด', send: 'ส่ง', close: 'ปิด', sent: 'ส่งคำถามแล้ว',
+      qClosed: 'ปิดรับคำถาม', qClosedHint: 'ตอนนี้ไกด์ไม่รับคำถาม',
+      qNoConn: 'ยังไม่ได้เชื่อมต่อ กรุณารอสักครู่',
+      micUnsupported: 'อุปกรณ์นี้ใช้การพิมพ์ด้วยเสียงไม่ได้',
+      voiceUnsupported: 'อุปกรณ์นี้อ่านออกเสียงไม่ได้',
+      voiceOnToast: 'เปิดเสียงแล้ว คำแปลจะออกจากลำโพง', speakOk: 'เสียงเปิดแล้ว',
+      setTitle: 'ตั้งค่า', setDisplay: 'การแสดงผล', setCaptionStyle: 'คำบรรยาย',
+      optBoth: 'คำแปล＋ต้นฉบับภาษาญี่ปุ่น', optTr: 'คำแปลเท่านั้น (ใหญ่)', optOrig: 'ต้นฉบับภาษาญี่ปุ่นเท่านั้น',
+      setFontSize: 'ขนาดตัวอักษร', setLang: 'ภาษา', setLangNote: 'คำบรรยายต่อไปจะเปลี่ยนเป็นภาษานี้',
+      setVoice: 'อ่านออกเสียง', setAutoTts: 'อ่านคำบรรยายอัตโนมัติ (TTS)',
+      setVoiceNote: 'ออกเสียงจากลำโพงมือถือ หน้าจอจะไม่ดับขณะเปิดเสียง'
+    },
+    vi: {
+      langTitle: 'Chọn ngôn ngữ của bạn', langSub: 'Chạm một ngôn ngữ để bắt đầu',
+      langNote: 'Phụ đề hiện ngay. Có thể đổi sau.',
+      voiceEnable: '🔈 Bật âm thanh', voiceOn: '🔊 Âm thanh BẬT', voiceOff: '🔇 Âm thanh TẮT',
+      rate: 'Tốc độ', font: 'Cỡ chữ', jump: 'Mới nhất ↓',
+      displayBoth: 'Bản dịch + nguyên văn', displayTr: 'Chỉ bản dịch', displayOrig: 'Chỉ nguyên văn',
+      connecting: 'Đang kết nối…', connected: 'Đã kết nối',
+      disconnected: 'Mất kết nối. Đang kết nối lại…', netError: 'Lỗi mạng. Đang kết nối lại…',
+      waitGuide: 'Đang chờ hướng dẫn viên', libFail: 'Không tải được thư viện kết nối', cannotConnect: 'Không kết nối được',
+      waitStart: 'Đang chờ hướng dẫn viên bắt đầu…', waitLang: 'Đang chờ phụ đề bằng ngôn ngữ này…',
+      liveLabel: '● Đang phiên dịch trực tiếp', listening: 'Đang nghe…', translating: 'Đang dịch…',
+      askShort: 'Hỏi', askTitle: 'Hỏi hướng dẫn viên', micHint: 'Chạm vào mic và nói',
+      micListening: 'Đang nghe… chạm để dừng', send: 'Gửi', close: 'Đóng', sent: 'Đã gửi câu hỏi',
+      qClosed: 'Đã đóng nhận câu hỏi', qClosedHint: 'Hiện hướng dẫn viên không nhận câu hỏi.',
+      qNoConn: 'Chưa kết nối. Vui lòng đợi một chút.',
+      micUnsupported: 'Thiết bị này không hỗ trợ nhập bằng giọng nói.',
+      voiceUnsupported: 'Thiết bị này không đọc được văn bản.',
+      voiceOnToast: 'Đã bật âm thanh. Bản dịch sẽ phát ra loa.', speakOk: 'Đã bật âm thanh',
+      setTitle: 'Cài đặt', setDisplay: 'Hiển thị', setCaptionStyle: 'Phụ đề',
+      optBoth: 'Bản dịch + nguyên văn tiếng Nhật', optTr: 'Chỉ bản dịch (lớn)', optOrig: 'Chỉ nguyên văn tiếng Nhật',
+      setFontSize: 'Cỡ chữ', setLang: 'Ngôn ngữ', setLangNote: 'Phụ đề tiếp theo sẽ chuyển sang ngôn ngữ này.',
+      setVoice: 'Đọc thành tiếng', setAutoTts: 'Tự động đọc phụ đề (TTS)',
+      setVoiceNote: 'Phát ra loa điện thoại. Màn hình không tắt khi bật âm thanh.'
+    },
+    id: {
+      langTitle: 'Pilih bahasa Anda', langSub: 'Ketuk bahasa untuk mulai',
+      langNote: 'Teks muncul langsung. Bisa diubah nanti.',
+      voiceEnable: '🔈 Nyalakan suara', voiceOn: '🔊 Suara AKTIF', voiceOff: '🔇 Suara NONAKTIF',
+      rate: 'Kecepatan', font: 'Ukuran huruf', jump: 'Terbaru ↓',
+      displayBoth: 'Terjemahan + asli', displayTr: 'Hanya terjemahan', displayOrig: 'Hanya asli',
+      connecting: 'Menghubungkan…', connected: 'Terhubung',
+      disconnected: 'Terputus. Menghubungkan ulang…', netError: 'Gangguan jaringan. Menghubungkan ulang…',
+      waitGuide: 'Menunggu pemandu', libFail: 'Gagal memuat pustaka koneksi', cannotConnect: 'Tidak bisa terhubung',
+      waitStart: 'Menunggu pemandu memulai…', waitLang: 'Menunggu teks dalam bahasa ini…',
+      liveLabel: '● Penerjemahan langsung', listening: 'Mendengarkan…', translating: 'Menerjemahkan…',
+      askShort: 'Tanya', askTitle: 'Tanya pemandu', micHint: 'Ketuk mikrofon lalu bicara',
+      micListening: 'Mendengarkan… ketuk untuk berhenti', send: 'Kirim', close: 'Tutup', sent: 'Pertanyaan terkirim',
+      qClosed: 'Pertanyaan ditutup', qClosedHint: 'Pemandu sedang tidak menerima pertanyaan.',
+      qNoConn: 'Belum terhubung. Mohon tunggu sebentar.',
+      micUnsupported: 'Input suara tidak tersedia di perangkat ini.',
+      voiceUnsupported: 'Perangkat ini tidak bisa membacakan teks.',
+      voiceOnToast: 'Suara aktif. Terjemahan keluar dari speaker.', speakOk: 'Suara aktif',
+      setTitle: 'Pengaturan', setDisplay: 'Tampilan', setCaptionStyle: 'Teks',
+      optBoth: 'Terjemahan + asli Jepang', optTr: 'Hanya terjemahan (besar)', optOrig: 'Hanya asli Jepang',
+      setFontSize: 'Ukuran huruf', setLang: 'Bahasa', setLangNote: 'Teks berikutnya akan memakai bahasa ini.',
+      setVoice: 'Bacakan', setAutoTts: 'Bacakan teks otomatis (TTS)',
+      setVoiceNote: 'Keluar dari speaker ponsel. Layar tetap menyala saat suara aktif.'
+    }
+  };
+
   const DEFAULTS = {
     // guide
     engine: 'trial',                    // trial | openai | gemini
@@ -103,6 +398,7 @@
     updateEnginePill();
     updateAsrLabel();
     updateLatencyUI();
+    updateQSpeak();
   }
 
   /* ---------------------------------------------------------
@@ -146,7 +442,8 @@
     // ゲストからの質問（双方向）
     qOpen: true,
     qSeq: 0,
-    questions: []
+    questions: [],
+    qSpeak: false,        // ゲストの質問の日本語訳を読み上げる（既定OFF）
   };
 
   const P = {
@@ -158,15 +455,28 @@
     joined: false,
     seen: new Set(),
     lastCaptionAt: 0,
-    // 質問（双方向）
+    // 質問（双方向・フローティングマイク）
     qOpen: true,
-    qRec: null
+    qRec: null,
+    qText: '',
+    qSent: false,
+    qListening: false,
+    qCloseTimer: null,
+    // 字幕の自動追従
+    pinnedUp: false,      // 過去を読み返している（自動追従を一時停止）
+    rafId: 0,
+    // 表示文言（言語切替で描き直すために保持する）
+    status: null,         // { kind, key }
+    waitKey: ''
   };
 
   const VOICE = {
     unlocked: false, speaking: false, queue: [], voices: [],
     wake: null,        // Screen Wake Lock
-    watchdog: null     // Android Chrome の無音停止対策
+    watchdog: null,    // Android Chrome の無音停止対策
+    canceledAt: 0,     // cancel() した時刻（直後の speak を 50ms 遅らせる）
+    spokeAt: 0,        // 発話を始めた時刻（スタック検出用）
+    guard: null        // onend が来ないときの保険タイマー
   };
 
   /* ---------------------------------------------------------
@@ -185,6 +495,8 @@
     updateAsrLabel();
     updateLatencyUI();
     applyParticipantLook();
+    applyGuestText();
+    updateQSpeak();
 
     if ('speechSynthesis' in window) {
       refreshVoices();
@@ -707,7 +1019,7 @@
     const badge = $('#qCount');
     if (badge) badge.textContent = String(A.questions.length);
     if (!A.questions.length) {
-      box.innerHTML = '<p class="empty">まだ質問はありません。ゲストの画面下の「💬 ガイドに質問する」から届きます。</p>';
+      box.innerHTML = '<p class="empty">まだ質問はありません。ゲストの画面右下の「🎙️ 質問」から届きます。</p>';
       return;
     }
     box.innerHTML = A.questions.slice().reverse().map(q => {
@@ -753,6 +1065,8 @@
       item.tr = res;
       item.state = 'done';
       renderQuestions();
+      // 任意：ゲストの質問を日本語で読み上げる（既定OFF）
+      if (S.qSpeak && res && res.text) guideSpeak(res.text);
     }).catch(() => {
       item.state = 'error';
       renderQuestions();
@@ -1478,8 +1792,9 @@
     $('#viewParticipant').classList.remove('hidden');
     $('#pRoom').textContent = room;
     document.title = 'ROOM ' + room + ' | QR同時通訳';
-    setPStatus('', '接続中…');
+    setPStatus('', 'connecting');
     highlightLang();
+    applyGuestText();
 
     if (langParam && LANG_MAP[langParam]) {
       S.myLang = langParam;
@@ -1490,15 +1805,29 @@
     ensureLibs().then(connectParticipant);
   }
 
-  function setPStatus(kind, text) {
+  // 状態の文言はキーで持ち、言語を切り替えたら描き直す
+  function setPStatus(kind, key) {
+    P.status = { kind: kind || '', key: key || '' };
     const dot = $('#pDot');
-    dot.className = 'dot' + (kind ? ' ' + kind : '');
-    $('#pStatus').textContent = text;
+    if (dot) dot.className = 'dot' + (kind ? ' ' + kind : '');
+    const el = $('#pStatus');
+    if (el) el.textContent = key ? t(key) : '';
+  }
+
+  function setWaiting(key) {
+    P.waitKey = key || '';
+    const el = $('#pWaitingText');
+    if (el && key) el.textContent = t(key);
+  }
+
+  function waitingHtml(key) {
+    return '<div id="pWaiting" class="p-waiting"><div class="wave" aria-hidden="true"><span></span><span></span><span></span></div>' +
+           '<p id="pWaitingText" data-i18n="' + key + '">' + esc(t(key)) + '</p></div>';
   }
 
   function connectParticipant() {
     if (typeof window.Peer === 'undefined') {
-      setPStatus('err', '通信ライブラリの読込失敗');
+      setPStatus('err', 'libFail');
       setTimeout(connectParticipant, 1500);
       return;
     }
@@ -1506,19 +1835,20 @@
       try {
         P.peer = new window.Peer(peerOptions());
       } catch (e) {
-        setPStatus('err', '接続できません');
+        setPStatus('err', 'cannotConnect');
         return;
       }
       P.peer.on('open', () => { openConn(); });
       P.peer.on('error', (err) => {
         const type = err && err.type;
         if (type === 'peer-unavailable') {
-          setPStatus('wait', 'ガイドの開始待ち');
-          $('#pWaiting').classList.remove('hidden');
-          $('#pWaitingText').textContent = 'ガイドの配信開始を待っています…';
+          setPStatus('wait', 'waitGuide');
+          const w = $('#pWaiting');
+          if (w) w.classList.remove('hidden');
+          setWaiting('waitStart');
           scheduleRetry();
         } else if (type === 'network' || type === 'server-error' || type === 'socket-error') {
-          setPStatus('wait', '通信エラー。再接続中…');
+          setPStatus('wait', 'netError');
           try { P.peer.reconnect(); } catch (e) {}
         } else if (type === 'unavailable-id') {
           try { P.peer.destroy(); } catch (e) {}
@@ -1529,7 +1859,7 @@
         }
       });
       P.peer.on('disconnected', () => {
-        setPStatus('wait', '切断。再接続中…');
+        setPStatus('wait', 'disconnected');
         try { P.peer.reconnect(); } catch (e) {}
       });
     } else if (P.peer.open) {
@@ -1544,7 +1874,7 @@
     try {
       conn = P.peer.connect(peerIdFor(A.room), { reliable: true, serialization: 'json' });
     } catch (e) {
-      setPStatus('err', '接続できません');
+      setPStatus('err', 'cannotConnect');
       scheduleRetry();
       return;
     }
@@ -1552,13 +1882,13 @@
 
     conn.on('open', () => {
       P.retry = 0;
-      setPStatus('live', '接続しました');
+      setPStatus('live', 'connected');
       if (S.myLang) sendHello();
     });
     conn.on('data', onHostData);
     conn.on('close', () => {
       if (!P.joined) return;
-      setPStatus('wait', '切断されました。再接続中…');
+      setPStatus('wait', 'disconnected');
       scheduleRetry();
     });
     conn.on('error', (e) => console.warn('[conn]', e && e.type));
@@ -1577,7 +1907,56 @@
     P.conn.send({ t: 'hello', lang: S.myLang || 'en' });
   }
 
-  /* ---------------- 質問（ゲスト → ガイド） ---------------- */
+  /* ---------------- 多言語（参加者画面） ---------------- */
+  function t(key) {
+    const dict = TEXTS[S.myLang] || TEXTS.en;
+    return (dict && dict[key]) || TEXTS.en[key] || key;
+  }
+
+  // CSS の content に渡す文字列（ダブルクォートで囲む）
+  function cssStr(s) {
+    return '"' + String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  }
+
+  // 参加者画面の全文言を、選んだ言語に差し替える
+  function applyGuestText() {
+    const view = $('#viewParticipant');
+    if (view) {
+      $$('[data-i18n]', view).forEach(el => { el.textContent = t(el.dataset.i18n); });
+      $$('[data-i18n-aria]', view).forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+    }
+    $$('.sheet-section[data-mode="participant"] [data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+
+    // 字幕の疑似ラベル（CSS の content: var(...)）
+    const stage = $('#pStage');
+    if (stage) {
+      stage.style.setProperty('--t-live', cssStr(t('liveLabel')));
+      stage.style.setProperty('--t-listening', cssStr(t('listening')));
+      stage.style.setProperty('--t-translating', cssStr(t('translating')));
+    }
+
+    // 状態・待機文言も今の言語で出し直す
+    if (P.status) setPStatus(P.status.kind, P.status.key);
+    if (P.waitKey) setWaiting(P.waitKey);
+
+    applyParticipantLook();
+    updateQaUI();
+    setQHint(P.qListening ? 'micListening' : 'micHint');
+
+    const sheet = $('#sheet');
+    if (sheet && !sheet.classList.contains('hidden') && A.role === 'participant') {
+      $('#sheetTitle').textContent = t('setTitle');
+    }
+  }
+
+  function setQHint(key) {
+    const el = $('#qHint');
+    if (el) el.textContent = t(key);
+  }
+
+  /* ---------------- 質問（ゲスト → ガイド）
+     文字入力欄は置かず、右下の小さなボタン → マイクのポップアップだけにする。
+     （スマホでキーボードが出て画面が狭くなるのを防ぐ） */
   function updateQaUI() {
     const on = P.qOpen !== false;
     const notice = $('#qNotice');
@@ -1586,74 +1965,166 @@
     if (notice) notice.classList.toggle('hidden', on);
     if (send) send.disabled = !on;
     if (mic) mic.disabled = !on;
-    const btn = $('#btnQAsk');
-    if (btn) btn.classList.toggle('off', !on);
-  }
-
-  function toggleQaCompose(force) {
-    const box = $('#qaCompose');
-    if (!box) return;
-    const show = typeof force === 'boolean' ? force : box.classList.contains('hidden');
-    box.classList.toggle('hidden', !show);
-    if (show) {
-      updateQaUI();
-      const ta = $('#qText');
-      if (ta && !ta.value) ta.focus();
-    } else {
-      stopQMic();
+    const fab = $('#btnQAsk');
+    if (fab) fab.classList.toggle('off', !on);
+    if (!on) {
+      const pop = $('#qaPop');
+      if (pop && !pop.classList.contains('hidden')) closeQaPop();
     }
   }
 
-  function sendQuestion() {
-    const ta = $('#qText');
-    const text = String((ta && ta.value) || '').replace(/\s+/g, ' ').trim();
-    if (!text) { if (ta) ta.focus(); return; }
-    if (P.qOpen === false) { toast('現在、質問は受け付けていません', 2600); updateQaUI(); return; }
-    if (!P.conn || !P.conn.open) { toast('ガイドにまだ接続していません。少し待ってからもう一度お試しください'); return; }
-    const id = 'gq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    P.conn.send({ t: 'question', id, lang: S.myLang || 'en', text: text.slice(0, 300), ts: Date.now() });
-    if (ta) ta.value = '';
-    stopQMic();
-    toggleQaCompose(false);
-    toast('質問を送りました（ガイドの画面に日本語訳が出ます）');
+  function openQaPop() {
+    if (P.qOpen === false) { toast(t('qClosedHint'), 2800); return; }
+    const pop = $('#qaPop');
+    if (!pop) return;
+    if (P.qCloseTimer) { clearTimeout(P.qCloseTimer); P.qCloseTimer = null; }
+    pop.classList.remove('hidden');
+    const fab = $('#btnQAsk');
+    if (fab) fab.classList.add('hidden');
+    P.qText = '';
+    P.qSent = false;
+    const live = $('#qLive');
+    if (live) live.textContent = '';
+    updateQaUI();
+    startQMic();        // タップの流れの中でマイクを開始（点滅して待ち受け）
   }
 
-  function toggleQMic() {
-    if (P.qRec) { stopQMic(); return; }
-    if (P.qOpen === false) { toast('現在、質問は受け付けていません', 2600); return; }
+  function closeQaPop() {
+    P.qSent = true;     // 閉じるときは送らない
+    stopQMic(true);
+    if (P.qCloseTimer) { clearTimeout(P.qCloseTimer); P.qCloseTimer = null; }
+    const pop = $('#qaPop');
+    if (pop) pop.classList.add('hidden');
+    const fab = $('#btnQAsk');
+    const stage = $('#pStage');
+    if (fab && stage && !stage.classList.contains('hidden')) fab.classList.remove('hidden');
+    const live = $('#qLive');
+    if (live) live.textContent = '';
+    P.qText = '';
+    setQHint('micHint');
+  }
+
+  function startQMic() {
+    if (P.qRec) return true;
+    if (P.qOpen === false) { toast(t('qClosedHint'), 2800); return false; }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { toast('このブラウザは音声入力に未対応です。キーボードで入力してください'); return; }
-    const L = LANG_MAP[S.myLang];
+    if (!SR) { setQHint('micUnsupported'); toast(t('micUnsupported'), 3200); return false; }
+    const L = LANG_MAP[S.myLang] || LANG_MAP.en;
     let rec;
-    try {
-      rec = new SR();
-    } catch (e) { toast('音声入力を開始できませんでした'); return; }
-    rec.lang = L ? L.bcp47 : 'en-US';
+    try { rec = new SR(); }
+    catch (e) { setQHint('micUnsupported'); toast(t('micUnsupported'), 3200); return false; }
+    rec.lang = L.bcp47;
     rec.continuous = false;
     rec.interimResults = true;
     rec.maxAlternatives = 1;
+    P.qSent = false;
+
+    rec.onstart = () => {
+      P.qListening = true;
+      const m = $('#qMic');
+      if (m) m.classList.add('listening');
+      setQHint('micListening');
+    };
     rec.onresult = (ev) => {
       let out = '';
       for (let i = 0; i < ev.results.length; i++) {
         out += (ev.results[i][0] && ev.results[i][0].transcript) || '';
       }
-      const ta = $('#qText');
-      if (ta) ta.value = out.trim();
+      out = out.trim();
+      P.qText = out;
+      const live = $('#qLive');
+      if (live) live.textContent = out;
     };
-    rec.onend = () => { P.qRec = null; $('#qMic').classList.remove('on'); };
-    rec.onerror = () => { P.qRec = null; $('#qMic').classList.remove('on'); };
+    rec.onerror = (ev) => {
+      const err = ev && ev.error;
+      P.qListening = false;
+      P.qRec = null;
+      const m = $('#qMic');
+      if (m) m.classList.remove('listening');
+      setQHint('micHint');
+      if (err === 'not-allowed' || err === 'service-not-allowed') toast(t('micUnsupported'), 3200);
+    };
+    rec.onend = () => {
+      P.qListening = false;
+      P.qRec = null;
+      const m = $('#qMic');
+      if (m) m.classList.remove('listening');
+      setQHint('micHint');
+      // 話し終わったら自動で送る（送信ボタンでも送れる）
+      if (P.qOpen !== false && P.qText && !P.qSent) autoSendQuestion();
+    };
+
     P.qRec = rec;
-    $('#qMic').classList.add('on');
+    P.qListening = true;
+    const mic = $('#qMic');
+    if (mic) mic.classList.add('listening');    // 大きく点滅（パルス）
+    setQHint('micListening');
     try { rec.start(); }
-    catch (e) { P.qRec = null; $('#qMic').classList.remove('on'); toast('音声入力を開始できませんでした'); }
+    catch (e) {
+      P.qRec = null;
+      P.qListening = false;
+      if (mic) mic.classList.remove('listening');
+      setQHint('micHint');
+      toast(t('micUnsupported'), 3200);
+      return false;
+    }
+    return true;
   }
 
-  function stopQMic() {
-    if (!P.qRec) return;
+  function stopQMic(cancel) {
+    if (!P.qRec) {
+      const b0 = $('#qMic');
+      if (b0) b0.classList.remove('listening');
+      P.qListening = false;
+      return;
+    }
+    if (cancel) P.qSent = true;
     try { P.qRec.stop(); } catch (e) {}
     P.qRec = null;
+    P.qListening = false;
     const b = $('#qMic');
-    if (b) b.classList.remove('on');
+    if (b) b.classList.remove('listening');
+  }
+
+  function toggleQMic() {
+    if (P.qListening || P.qRec) stopQMic(false);   // 停止 → onend で自動送信
+    else startQMic();
+  }
+
+  function autoSendQuestion() {
+    const text = String(P.qText || '').trim();
+    if (!text || P.qSent) return;
+    if (!sendQuestionText(text, { auto: true })) { P.qSent = true; return; }
+    P.qSent = true;
+    const live = $('#qLive');
+    if (live) live.textContent = '';
+    setQHint('sent');
+    if (P.qCloseTimer) clearTimeout(P.qCloseTimer);
+    P.qCloseTimer = setTimeout(() => { P.qCloseTimer = null; closeQaPop(); }, 1200);
+  }
+
+  function sendQuestionText(text, opts = {}) {
+    const body = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+    if (!body) { if (!opts.auto) toast(t('micHint'), 2400); return false; }
+    if (P.qOpen === false) { toast(t('qClosedHint'), 2800); updateQaUI(); return false; }
+    if (!P.conn || !P.conn.open) { toast(t('qNoConn'), 3200); return false; }
+    const id = 'gq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    P.conn.send({ t: 'question', id, lang: S.myLang || 'en', text: body, ts: Date.now() });
+    toast(t('qSent'), 2400);
+    return true;
+  }
+
+  function sendQuestion() {
+    const text = String(P.qText || '').trim();
+    if (!text) { toast(t('micHint'), 2400); setQHint('micHint'); return; }
+    const ok = sendQuestionText(text, {});
+    if (ok) {
+      P.qSent = true;
+      stopQMic(true);       // 送ったらマイクは止める（点滅も消す）
+      const live = $('#qLive');
+      if (live) live.textContent = '';
+      P.qCloseTimer = setTimeout(() => { P.qCloseTimer = null; closeQaPop(); }, 900);
+    }
   }
 
   function onHostData(msg) {
@@ -1679,8 +2150,10 @@
       case 'qopen':
         P.qOpen = msg.open !== false;
         updateQaUI();
-        if (!P.qOpen && P.qRec) stopQMic();
-        if (!P.qOpen) toast('現在、質問は受け付けていません', 2600);
+        if (!P.qOpen) {
+          if (P.qRec) stopQMic(true);
+          toast(t('qClosedHint'), 2600);
+        }
         break;
     }
   }
@@ -1718,6 +2191,7 @@
     S.myLang = code;
     saveSettings();
     highlightLang();
+    applyGuestText();
     enterStage();
     if (P.conn && P.conn.open) {
       if (P.joined) {
@@ -1729,8 +2203,10 @@
     if (changed) {
       // 言語を変えたら前の言語の字幕は消す（混ざると読みにくいため）
       const box = $('#pCaptions');
-      box.innerHTML = '<div id="pWaiting" class="p-waiting"><div class="wave" aria-hidden="true"><span></span><span></span><span></span></div><p id="pWaitingText">この言語の字幕を待っています…</p></div>';
+      if (box) box.innerHTML = waitingHtml('waitLang');
+      P.waitKey = 'waitLang';
       P.seen.clear();
+      P.pinnedUp = false;
     }
     P.joined = true;
     closeSheet();
@@ -1739,6 +2215,9 @@
   function enterStage() {
     $('#pLangPick').classList.add('hidden');
     $('#pStage').classList.remove('hidden');
+    const fab = $('#btnQAsk');
+    if (fab) fab.classList.remove('hidden');
+    applyGuestText();          // 選んだ言語でUI文言をそろえる
     applyParticipantLook();
     if (!S.pTts) $('#btnTts').classList.remove('on');
     else $('#btnTts').classList.add('on');
@@ -1756,16 +2235,19 @@
     const stage = $('#pStage');
     if (stage) stage.style.setProperty('--fs', String(clamp(S.pFont || 1, 0.85, 1.5)));
     const btn = $('#btnDisplay');
-    if (btn) btn.textContent = S.pDisplay === 'translation' ? '訳だけ表示' : S.pDisplay === 'original' ? '原文だけ表示' : '訳＋原文';
+    if (btn) btn.textContent = S.pDisplay === 'translation' ? t('displayTr') : S.pDisplay === 'original' ? t('displayOrig') : t('displayBoth');
     const tts = $('#btnTts');
     if (tts) {
       tts.classList.toggle('on', !!S.pTts);
-      tts.textContent = S.pTts ? '🔊 音声 ON' : '🔇 音声 OFF';
+      tts.textContent = S.pTts ? t('voiceOn') : t('voiceOff');
     }
+    const voice = $('#btnVoice');
+    if (voice) voice.textContent = t('voiceEnable');
     const rate = $('#btnRate');
     if (rate) {
       rate.textContent = '⏩ ' + rateLabel(speechRate());
       rate.classList.toggle('on', speechRate() !== 1);
+      rate.setAttribute('aria-label', t('rate') + ' ' + rateLabel(speechRate()));
     }
     if (A.role === 'participant') {
       if (S.pTts) requestWakeLock();
@@ -1872,14 +2354,32 @@
     }
   }
 
-  function scrollToLatest() {
+  // 原則、字幕はいつも一番下（最新）へ自動追従する。
+  // 過去を読み返している（大きく上へスクロールした）ときだけ一時停止する。
+  function scrollToLatest(force) {
     const box = $('#pCaptions');
     if (!box) return;
-    if (nearBottom(box)) box.scrollTop = box.scrollHeight;
+    if (!force && P.pinnedUp) return;
+    if (P.rafId) return;          // 次の描画で追従する予約が入っている
+    const run = () => {
+      P.rafId = 0;
+      const b = $('#pCaptions');
+      if (!b) return;
+      b.scrollTop = b.scrollHeight;   // レイアウト確定後（rAF）に実行
+    };
+    if (typeof requestAnimationFrame === 'function') P.rafId = requestAnimationFrame(run);
+    else setTimeout(run, 0);
   }
 
   function nearBottom(el) {
     return el.scrollHeight - el.scrollTop - el.clientHeight < 90;
+  }
+
+  function onCaptionsScroll() {
+    const box = $('#pCaptions');
+    if (!box) return;
+    P.pinnedUp = !nearBottom(box);   // 上へ戻って読み返している間は追従を止める
+    updateJump();
   }
 
   function updateJump() {
@@ -1894,29 +2394,44 @@
     try { VOICE.voices = window.speechSynthesis.getVoices() || []; } catch (e) { VOICE.voices = []; }
   }
 
-  function pickVoice(langCode) {
-    const L = LANG_MAP[langCode];
-    if (!L || !VOICE.voices.length) return null;
-    const want = L.bcp47.toLowerCase();
-    const prefix = want.split('-')[0];
-    let best = null;
-    for (const v of VOICE.voices) {
-      const vl = String(v.lang || '').toLowerCase().replace('_', '-');
-      if (vl === want) { best = v; if (v.localService) break; }
-    }
-    if (best) return best;
-    for (const v of VOICE.voices) {
-      const vl = String(v.lang || '').toLowerCase().replace('_', '-');
-      if (vl.split('-')[0] === prefix) { best = v; if (v.localService) break; }
-    }
-    return best;
+  // 言語情報（ガイドの日本語読み上げも扱うため ja を補う）
+  function langInfo(code) {
+    if (LANG_MAP[code]) return LANG_MAP[code];
+    if (code === 'ja') return { code: 'ja', bcp47: 'ja-JP', flag: '🇯🇵', ja: '日本語', native: '日本語' };
+    return LANG_MAP.en;
   }
 
-  const SPEAK_OK = {
-    'en':'Ready', 'zh-CN':'准备好了', 'zh-TW':'準備好了', 'ko':'준비되었습니다',
-    'es':'Listo', 'fr':'Prêt', 'de':'Bereit', 'pt':'Pronto', 'it':'Pronto',
-    'th':'พร้อม', 'vi':'Sẵn sàng', 'id':'Siap'
-  };
+  // 端末内蔵（localService）の音声を最優先する。
+  // ネットワーク専用の声は未ダウンロードだと無音になるので、あっただけでは使わない。
+  // ローカルが無ければ null を返し、u.lang に OS の既定音声を選ばせる（Android Chrome で鳴りやすい）。
+  function pickVoice(langCode) {
+    const L = langInfo(langCode);
+    if (!L || !VOICE.voices.length) return null;
+    const want = String(L.bcp47).toLowerCase().replace('_', '-');
+    const prefix = want.split('-')[0];
+    let local = null, localScore = 0;
+    for (const v of VOICE.voices) {
+      if (!v || v.localService !== true) continue;     // ローカル音声だけ
+      const vl = String(v.lang || '').toLowerCase().replace('_', '-');
+      const score = vl === want ? 2 : (vl.split('-')[0] === prefix ? 1 : 0);
+      if (score > localScore) { local = v; localScore = score; }
+    }
+    return local;
+  }
+
+  function makeUtterance(text, langCode) {
+    const L = langInfo(langCode);
+    let u;
+    try { u = new SpeechSynthesisUtterance(String(text == null ? '' : text)); }
+    catch (e) { return null; }
+    u.lang = L.bcp47;
+    const v = pickVoice(langCode);
+    if (v) u.voice = v;        // 無ければ設定しない（OS標準の既定音声に任せる）
+    u.rate = speechRate();
+    u.volume = 1;              // スマホのスピーカーで聞こえる音量
+    u.pitch = 1;
+    return u;
+  }
 
   const RATES = [1, 1.15, 1.3];
   const rateLabel = (v) => (Math.abs(Number(v) - 1) < 0.01 ? '1.0' : String(Number(v))) + 'x';
@@ -1950,46 +2465,80 @@
   function startVoiceWatchdog() {
     if (VOICE.watchdog) return;
     VOICE.watchdog = setInterval(() => {
-      if (A.role !== 'participant' || !S.pTts) return;
+      if (A.role === 'participant' && !S.pTts) return;
       const syn = window.speechSynthesis;
       if (!syn) return;
       try { if (syn.paused) syn.resume(); } catch (e) {}
-      // 実際には止まっているのに「話し中」のままになっていたら次へ進める
-      if (VOICE.speaking && !syn.speaking && !syn.pending) {
+      // 実際には止まっているのに「話し中」のままになっていたら次へ進める（スタック防止）
+      const started = VOICE.spokeAt && Date.now() - VOICE.spokeAt > 1200;
+      const stuck = VOICE.speaking && started && !syn.speaking && !syn.pending;
+      const tooLong = VOICE.speaking && VOICE.spokeAt && Date.now() - VOICE.spokeAt > 15000;
+      if (stuck || tooLong) {
         VOICE.speaking = false;
+        VOICE.spokeAt = 0;
         pumpSpeech();
       }
-    }, 5000);
+    }, 4000);
   }
 
+  // cancel() の直後に speak() すると Android Chrome で次の発話が消えるため、時刻を控えておく
+  function cancelSpeech() {
+    VOICE.queue = [];
+    VOICE.speaking = false;
+    VOICE.canceledAt = Date.now();
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+  }
+
+  function speakDelay() {
+    return Math.max(0, 50 - (Date.now() - (VOICE.canceledAt || 0)));
+  }
+
+  // 1件を確実に鳴らす（cancel 直後でも 50ms 待ってから speak する）
+  function speakNow(u) {
+    if (!u) return;
+    VOICE.speaking = true;
+    VOICE.spokeAt = Date.now();
+    const clear = () => {
+      VOICE.speaking = false;
+      VOICE.spokeAt = 0;
+      clearTimeout(VOICE.guard);
+      VOICE.guard = null;
+    };
+    u.onend = clear;
+    u.onerror = clear;
+    // onend が来ない端末でも「話し中」のまま固まらないようにする
+    clearTimeout(VOICE.guard);
+    VOICE.guard = setTimeout(clear, Math.max(4000, String(u.text || '').length * 200 + 2000));
+    setTimeout(() => {
+      try { window.speechSynthesis.speak(u); }
+      catch (e) { clear(); }
+    }, speakDelay());
+  }
+
+  // 音声ON：その場で短い確認音声を鳴らし、スピーカーから音が出るか確かめられるようにする
   function unlockVoice() {
     if (!('speechSynthesis' in window)) {
-      toast('この端末は読み上げ（音声合成）に対応していません');
+      toast(t('voiceUnsupported'));
       return;
     }
-    try {
-      // 無音だとロック解除と見なされない端末があるため、短い実音声を1回鳴らす
-      const u = new SpeechSynthesisUtterance(SPEAK_OK[S.myLang] || 'Ready');
-      u.lang = LANG_MAP[S.myLang] ? LANG_MAP[S.myLang].bcp47 : 'en-US';
-      const v = pickVoice(S.myLang);
-      if (v) u.voice = v;
-      u.rate = speechRate();
-      u.volume = 1;
-      window.speechSynthesis.speak(u);
-      VOICE.unlocked = true;
-      $('#btnVoice').classList.add('hidden');
-      requestWakeLock();
-      toast('音声を有効にしました（スピーカーから読み上げます）');
-    } catch (e) {
-      toast('音声を開始できませんでした');
-    }
+    refreshVoices();
+    VOICE.unlocked = true;
+    const b = $('#btnVoice');
+    if (b) b.classList.add('hidden');
+    cancelSpeech();
+    speakNow(makeUtterance(t('speakOk'), S.myLang || 'en'));
+    requestWakeLock();
+    toast(t('voiceOnToast'), 3000);
   }
 
-  function speakQueue(text, langCode) {
+  function speakQueue(text, langCode, opts) {
     if (!('speechSynthesis' in window)) return;
-    if (!S.pTts) return;
+    if (!(opts && opts.force) && !S.pTts) return;
     if (!VOICE.unlocked) {
-      $('#btnVoice').classList.remove('hidden');
+      if (A.role === 'participant') {
+        const b = $('#btnVoice');
+        if (b) b.classList.remove('hidden');
+      }
       return;
     }
     // 遅れがたまったら古いものを捨てて、今の話に追いつく（最新2件だけ残す）
@@ -2001,22 +2550,50 @@
   function pumpSpeech() {
     if (VOICE.speaking || !VOICE.queue.length) return;
     const job = VOICE.queue.shift();
-    const L = LANG_MAP[job.lang];
-    let u;
-    try {
-      u = new SpeechSynthesisUtterance(job.text);
-    } catch (e) { return; }
-    u.lang = L ? L.bcp47 : 'en-US';
-    const v = pickVoice(job.lang);
-    if (v) u.voice = v;
-    u.rate = speechRate();          // 同時通訳のテンポに合わせて 1.0 / 1.15 / 1.3
-    u.volume = 1;                   // スピーカーでもしっかり聞こえる音量
-    u.pitch = 1;
-    u.onend = () => { VOICE.speaking = false; setTimeout(pumpSpeech, 60); };
-    u.onerror = () => { VOICE.speaking = false; setTimeout(pumpSpeech, 60); };
+    const u = makeUtterance(job.text, job.lang);
+    if (!u) { setTimeout(pumpSpeech, 80); return; }
+    const done = () => {
+      VOICE.speaking = false;
+      VOICE.spokeAt = 0;
+      clearTimeout(VOICE.guard);
+      VOICE.guard = null;
+      setTimeout(pumpSpeech, 80);
+    };
+    u.onend = done;
+    u.onerror = done;
     VOICE.speaking = true;
-    try { window.speechSynthesis.speak(u); }
-    catch (e) { VOICE.speaking = false; }
+    VOICE.spokeAt = Date.now();
+    // onend が来ない端末でも次の文へ進める（発話スタックの防止）
+    clearTimeout(VOICE.guard);
+    VOICE.guard = setTimeout(done, Math.max(4000, String(u.text || '').length * 200 + 2000));
+    setTimeout(() => {
+      try { window.speechSynthesis.speak(u); }
+      catch (e) { done(); }
+    }, speakDelay());
+  }
+
+  // ガイド側：ゲストの質問（日本語訳）を読み上げる
+  function guideSpeak(text) {
+    if (!S.qSpeak) return;
+    const body = String(text || '').trim();
+    if (!body) return;
+    if (!('speechSynthesis' in window)) return;
+    VOICE.unlocked = true;      // トグルを押したジェスチャーの流れで解除済み
+    if (VOICE.queue.length >= 2) VOICE.queue.shift();
+    VOICE.queue.push({ text: body, lang: 'ja' });
+    pumpSpeech();
+  }
+
+  function stopGuideSpeak() {
+    VOICE.queue = [];
+    cancelSpeech();
+  }
+
+  function updateQSpeak() {
+    const b = $('#btnQSpeak');
+    if (!b) return;
+    b.classList.toggle('on', !!S.qSpeak);
+    b.textContent = S.qSpeak ? '🔊 質問を読み上げ ON' : '🔇 質問を読み上げ OFF';
   }
 
   /* ---------------------------------------------------------
@@ -2104,17 +2681,13 @@
       S.pTts = !S.pTts;
       saveSettings();
       applyParticipantLook();
-      if (S.pTts && !VOICE.unlocked) {
-        $('#btnVoice').classList.remove('hidden');
-        toast('「音声を有効にする」を1回押すと読み上げが始まります');
-      }
-      if (!S.pTts) {
-        VOICE.queue = [];
-        VOICE.speaking = false;
-        try { window.speechSynthesis.cancel(); } catch (e) {}
-        releaseWakeLock();
+      if (S.pTts) {
+        // 音声ONを押したら、その場で選択中の言語の確認音声を鳴らす
+        // （スピーカーから実際に音が出るか、ここで確かめられる）
+        unlockVoice();
       } else {
-        requestWakeLock();
+        cancelSpeech();
+        releaseWakeLock();
       }
     });
     $('#btnRate').addEventListener('click', () => {
@@ -2138,19 +2711,34 @@
       applyParticipantLook();
     });
     $('#btnJump').addEventListener('click', () => {
-      const box = $('#pCaptions');
-      box.scrollTop = box.scrollHeight;
+      P.pinnedUp = false;
+      scrollToLatest(true);
       updateJump();
     });
-    $('#pCaptions').addEventListener('scroll', updateJump);
+    $('#pCaptions').addEventListener('scroll', onCaptionsScroll, { passive: true });
+    window.addEventListener('resize', () => { if (!P.pinnedUp) scrollToLatest(true); });
 
-    // 質問（双方向）
-    $('#btnQAsk').addEventListener('click', () => toggleQaCompose());
-    $('#qClose').addEventListener('click', () => toggleQaCompose(false));
+    // 質問（双方向・フローティングマイク）
+    $('#btnQAsk').addEventListener('click', openQaPop);
+    $('#qClose').addEventListener('click', closeQaPop);
     $('#qSend').addEventListener('click', sendQuestion);
     $('#qMic').addEventListener('click', toggleQMic);
-    $('#qText').addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') sendQuestion();
+
+    // ガイド側：質問の読み上げ（任意・既定OFF）
+    $('#btnQSpeak').addEventListener('click', () => {
+      S.qSpeak = !S.qSpeak;
+      saveSettings();
+      updateQSpeak();
+      if (S.qSpeak && 'speechSynthesis' in window) {
+        // 押したジェスチャーのうちに解除して、短い確認音声を鳴らす
+        VOICE.unlocked = true;
+        cancelSpeech();
+        speakNow(makeUtterance('質問の読み上げを開始します', 'ja'));
+        toast('ゲストの質問を日本語で読み上げます');
+      } else if (!S.qSpeak) {
+        stopGuideSpeak();
+        toast('質問の読み上げをOFFにしました');
+      }
     });
 
     // ガイド側：質問パネル
