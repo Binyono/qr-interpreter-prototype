@@ -2996,6 +2996,7 @@
   // 動画の再生にはユーザー操作が要る端末があるので、最初のタップのときにだけ作って再生する
   function startNoSleepVideo() {
     if (!AWAKE.needed || AWAKE.playing) return;
+    if (VOICE.wake && !VOICE.wake.released) return;   // Wake Lock が効いているなら不要
     if (!AWAKE.gesture) return;                       // タップ前には作らない
     if (document.visibilityState === 'hidden') return;
     const v = ensureNoSleepVideo();
