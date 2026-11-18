@@ -2176,6 +2176,9 @@
     if (!wrap) return;
     wrap.classList.toggle('hidden', !open);
     if (btn) btn.classList.toggle('on', !!open);
+    // 入力欄が開いている間は、下の「送信」ボタンを隠す（ボタンが二つ並ばないように）
+    const mainSend = $('#qSend');
+    if (mainSend) mainSend.classList.toggle('hidden', !!open);
     const inp = $('#qaTypeInput');
     if (open) {
       setQLiveText('');
@@ -2420,7 +2423,7 @@
     }
     const id = 'gq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     P.conn.send({ t: 'question', id, lang: S.myLang || 'en', text: body, ts: Date.now() });
-    toast(t('qSent'), 2400);
+    toast(t('sent'), 2400);
     return true;
   }
 
