@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070a12">
 <meta name="description" content="QRコードを読み取るだけで使える、受信機不要のリアルタイムAI同時通訳（プロトタイプ）">
 <title>QR同時通訳 | リアルタイムAI通訳</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=4">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c5cff'/%3E%3Ctext x='32' y='44' font-size='34' font-family='sans-serif' font-weight='bold' text-anchor='middle' fill='white'%3EQ%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -85,6 +85,16 @@
       </div>
     </section>
 
+    <section class="card q-card" id="qCard">
+      <div class="card-head">
+        <h2>📩 ゲストからの質問 <span id="qCount" class="count-badge">0</span></h2>
+        <label class="q-switch"><input id="qToggle" type="checkbox" checked><span id="qToggleLabel">受付 ON</span></label>
+      </div>
+      <div id="qList" class="q-list">
+        <p class="empty">まだ質問はありません。ゲストの画面下の「💬 ガイドに質問する」から届きます。</p>
+      </div>
+    </section>
+
     <section class="card live-card">
       <div class="card-head">
         <h2>ライブ字幕</h2>
@@ -124,9 +134,10 @@
 
   <div id="pStage" class="p-stage hidden">
     <div class="p-bar">
-      <button id="btnVoice" class="btn voice block" type="button">🔈 音声を有効にする（最初の1回だけ）</button>
       <div class="p-bar-row">
-        <button id="btnTts" class="chip-btn on" type="button">🔊 自動読み上げ ON</button>
+        <button id="btnVoice" class="chip-btn voice-chip" type="button">🔈 音声を有効にする</button>
+        <button id="btnTts" class="chip-btn on" type="button">🔊 音声 ON</button>
+        <button id="btnRate" class="chip-btn" type="button" aria-label="読み上げ速度">⏩ 1.0x</button>
         <button id="btnDisplay" class="chip-btn" type="button">訳＋原文</button>
         <button id="btnFont" class="chip-btn" type="button">文字サイズ</button>
       </div>
@@ -136,6 +147,21 @@
       <div id="pWaiting" class="p-waiting">
         <div class="wave" aria-hidden="true"><span></span><span></span><span></span></div>
         <p id="pWaitingText">ガイドの配信開始を待っています…</p>
+      </div>
+    </div>
+
+    <div id="qaBar" class="qa-bar">
+      <button id="btnQAsk" class="qa-open" type="button">💬 ガイドに質問する</button>
+      <div id="qaCompose" class="qa-compose hidden">
+        <div class="qa-row">
+          <textarea id="qText" rows="2" maxlength="300" placeholder="あなたの言語のまま入力、またはマイクで話してください"></textarea>
+          <button id="qMic" class="chip-btn qa-mic" type="button" aria-label="音声で入力">🎤</button>
+        </div>
+        <div class="qa-actions">
+          <p id="qNotice" class="qa-notice hidden">現在、質問は受け付けていません</p>
+          <button id="qSend" class="btn primary small" type="button">送信</button>
+          <button id="qClose" class="btn ghost small" type="button">閉じる</button>
+        </div>
       </div>
     </div>
     <button id="btnJump" class="jump hidden" type="button">最新へ ↓</button>
@@ -252,7 +278,7 @@
     <div class="sheet-section" data-mode="participant">
       <h3>読み上げ</h3>
       <label class="switch-row"><span>自動読み上げ（TTS）</span><input id="pTts" type="checkbox"></label>
-      <p class="muted small">端末の音声合成を使います。音声が入っていない言語は、端末の設定から追加してください。</p>
+      <p class="muted small">スマホのスピーカーからそのまま聞けます（イヤホンも使えます）。音声ONの間は画面が消えにくくなります。スピーカーで聴くときは、ガイドのマイクが拾わない距離・音量だとハウリングしにくくなります。</p>
       <h3 style="margin-top:16px">接続の詳細</h3>
       <label for="iceExtraP" class="small muted">追加のICEサーバー（TURN）JSON</label>
       <textarea id="iceExtraP" rows="3" spellcheck="false" placeholder='[{"urls":"turn:turn.example.com:3478","username":"user","credential":"pass"}]'></textarea>
@@ -276,6 +302,8 @@
       <li><b>配信を開始</b>を押すと、部屋コードとQRコードが出ます。</li>
       <li>もう1台のスマホのカメラでQRを読み取り、開いたページで<b>言語を選ぶ</b>と字幕が届きます。</li>
       <li>この端末の<b>マイク</b>を押して話すと、日本語が字幕になり、相手の言語に翻訳されて表示・読み上げされます。</li>
+      <li>ゲストは画面下の<b>💬 ガイドに質問する</b>から、自分の言語のまま文字か音声で質問できます。ガイドの画面に日本語訳が出るので、<b>📩 ゲストからの質問</b>の「✓ 済」で消してください。受付はON/OFFできます。</li>
+      <li>参加者の画面は、上部の<b>🔊 音声 ON/OFF</b> と <b>⏩ 1.0x / 1.15x / 1.3x</b> で、文字とスピーカーの音声を同時に楽しめます。</li>
       <li>本番の精度にするには、右上の⚙️で<b>OpenAI または Gemini のAPIキー</b>を入れてください。</li>
     </ol>
     <p class="muted small">マイクは HTTPS のページでのみ使えます（Netlify Drop 等にアップしたURL）。2台を同じWi-Fiにつなぐと接続が安定します。マイクが使えない環境でも、下の入力欄から日本語を送ってテストできます。</p>
@@ -286,6 +314,6 @@
 
 <script src="vendor/peerjs.min.js"></script>
 <script src="vendor/qrcode.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

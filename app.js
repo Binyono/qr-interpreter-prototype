@@ -52,7 +52,8 @@
     myLang: '',
     pDisplay: 'both',                   // both | translation | original
     pFont: 1,
-    pTts: true
+    pTts: true,
+    pRate: 1                            // 読み上げ速度（1 / 1.15 / 1.3）
   };
 
   const $  = (sel, root = document) => root.querySelector(sel);
@@ -141,7 +142,11 @@
     preTimer: null,
     preSeq: 0,
     // 直前の確定文（途中文字→確定の二重表示よけ）
-    recentPublished: []
+    recentPublished: [],
+    // ゲストからの質問（双方向）
+    qOpen: true,
+    qSeq: 0,
+    questions: []
   };
 
   const P = {
@@ -152,10 +157,17 @@
     retryTimer: null,
     joined: false,
     seen: new Set(),
-    lastCaptionAt: 0
+    lastCaptionAt: 0,
+    // 質問（双方向）
+    qOpen: true,
+    qRec: null
   };
 
-  const VOICE = { unlocked: false, speaking: false, queue: [], voices: [] };
+  const VOICE = {
+    unlocked: false, speaking: false, queue: [], voices: [],
+    wake: null,        // Screen Wake Lock
+    watchdog: null     // Android Chrome の無音停止対策
+  };
 
   /* ---------------------------------------------------------
      3. 起動
@@ -177,7 +189,12 @@
     if ('speechSynthesis' in window) {
       refreshVoices();
       window.speechSynthesis.onvoiceschanged = refreshVoices;
+      startVoiceWatchdog();
     }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && S.pTts) requestWakeLock();
+    });
+    window.addEventListener('pagehide', releaseWakeLock);
 
     const params = new URLSearchParams(location.search);
     const room = (params.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
@@ -283,6 +300,8 @@
     document.title = 'QR同時通訳 | ROOM ' + A.room;
     setGuideStatus('', '未開始');
     renderParticipants();
+    renderQuestions();
+    setQOpen(A.qOpen, true);
   }
 
   function setGuideStatus(kind, text) {
@@ -376,7 +395,7 @@
         rec.openedAt = Date.now();
         renderParticipants();
         setGuideStatus('live', '配信中');
-        sendTo(rec, { t: 'init', room: A.room, ts: Date.now() });
+        sendTo(rec, { t: 'init', room: A.room, ts: Date.now(), qOpen: !!A.qOpen });
       });
       conn.on('data', (data) => onGuestData(rec, data));
       conn.on('close', () => {
@@ -424,6 +443,9 @@
         break;
       case 'ping':
         sendTo(rec, { t: 'pong', ts: Date.now() });
+        break;
+      case 'question':
+        onGuestQuestion(rec, msg);
         break;
     }
   }
@@ -592,8 +614,8 @@
     if (A.preTimer) { clearTimeout(A.preTimer); A.preTimer = null; }
     const t = String(text || '').trim();
     if (t.length < (S.engine === 'trial' ? 8 : 4)) return;
-    const minGap = S.engine === 'trial' ? 1200 : 500;   // 連続で叩きすぎない
-    const wait = immediate ? 0 : Math.max(700, minGap - (Date.now() - (A.pre.at || 0)));
+    const minGap = S.engine === 'trial' ? 350 : 250;   // 連続で叩きすぎない（高速化: 1200→350）
+    const wait = immediate ? 0 : Math.max(250, minGap - (Date.now() - (A.pre.at || 0)));
     A.preTimer = setTimeout(() => { A.preTimer = null; runPrefetch(); }, wait);
   }
 
@@ -667,6 +689,76 @@
     }).join('');
   }
 
+  /* ---------------- ゲストからの質問（双方向） ---------------- */
+  function setQOpen(on, silent) {
+    A.qOpen = !!on;
+    const cb = $('#qToggle');
+    if (cb) cb.checked = A.qOpen;
+    const lab = $('#qToggleLabel');
+    if (lab) lab.textContent = A.qOpen ? '受付 ON' : '受付 OFF';
+    const card = $('#qCard');
+    if (card) card.classList.toggle('off', !A.qOpen);
+    if (!silent) broadcast({ t: 'qopen', open: A.qOpen });
+  }
+
+  function renderQuestions() {
+    const box = $('#qList');
+    if (!box) return;
+    const badge = $('#qCount');
+    if (badge) badge.textContent = String(A.questions.length);
+    if (!A.questions.length) {
+      box.innerHTML = '<p class="empty">まだ質問はありません。ゲストの画面下の「💬 ガイドに質問する」から届きます。</p>';
+      return;
+    }
+    box.innerHTML = A.questions.slice().reverse().map(q => {
+      const L = LANG_MAP[q.lang] || LANG_MAP.en;
+      let ja;
+      if (q.tr && q.tr.text) ja = esc(q.tr.text);
+      else if (q.state === 'error') ja = '（日本語に訳せませんでした）';
+      else ja = '翻訳中…';
+      const cls = 'q-ja' + (q.tr && q.tr.text ? (q.tr.degraded ? ' degraded' : '') : ' pending');
+      return '<article class="q-item" data-id="' + esc(q.id) + '">' +
+        '<div class="q-head"><span class="q-lang">' + L.flag + ' ' + esc(L.ja) + '</span>' +
+        '<span class="q-time">' + timeLabel(q.ts) + '</span>' +
+        '<button class="q-done" type="button" data-id="' + esc(q.id) + '">✓ 済</button></div>' +
+        '<p class="q-text">' + esc(q.text) + '</p>' +
+        '<p class="' + cls + '">' + ja + '</p>' +
+      '</article>';
+    }).join('');
+  }
+
+  function onGuestQuestion(rec, msg) {
+    const text = String((msg && msg.text) || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+    if (!text) return;
+    if (!A.qOpen) {
+      // 受付OFF中は受け取らず、状態を送り直してゲスト側の入力を止める
+      sendTo(rec, { t: 'qopen', open: false });
+      return;
+    }
+    const now = Date.now();
+    if (rec.lastQAt && now - rec.lastQAt < 1200) return;   // 連打よけ
+    rec.lastQAt = now;
+    rec.lang = normalizeLang((msg && msg.lang) || rec.lang);
+
+    const id = 'q' + (++A.qSeq);
+    const item = { id, guestId: String((msg && msg.id) || ''), lang: rec.lang, text, tr: null, state: 'pending', ts: now };
+    A.questions.push(item);
+    if (A.questions.length > 30) A.questions.shift();
+    renderQuestions();
+    sendTo(rec, { t: 'qack', id: item.guestId });
+    if (navigator.vibrate) { try { navigator.vibrate([28, 40, 28]); } catch (e) {} }
+
+    // ガイドが設定している翻訳エンジンで、その場で日本語に訳す
+    translateToJa(text, item.lang).then(res => {
+      item.tr = res;
+      item.state = 'done';
+      renderQuestions();
+    }).catch(() => {
+      item.state = 'error';
+      renderQuestions();
+    });
+  }
+
   // 言語を変えた参加者に、直近の数件をその言語で送り直す
   async function refreshRecent(lang, targetRec) {
     const recent = A.history.slice(-3);
@@ -732,9 +824,9 @@
     toast(name + 'の翻訳に失敗しました（' + ((err && err.message) || 'エラー') + '）。簡易翻訳で続けます');
   }
 
-  async function mymemoryTranslate(text, lang) {
+  async function mymemoryTranslateFrom(text, from, to) {
     const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) +
-                '&langpair=' + encodeURIComponent('ja|' + lang);
+                '&langpair=' + encodeURIComponent(from + '|' + to);
     const r = await fetch(url, { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
@@ -743,9 +835,15 @@
     return cleanTr(t);
   }
 
-  async function googleTrialTranslate(text, lang) {
-    const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=' +
-                encodeURIComponent(lang) + '&dt=t&q=' + encodeURIComponent(text);
+  function mymemoryTranslate(text, lang) {
+    return mymemoryTranslateFrom(text, 'ja', lang);
+  }
+
+  // Google の公開エンドポイント（非公式・APIキー不要）。応答が速いので無料モードの第一候補
+  async function googlePublicTranslate(text, from, to) {
+    const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' +
+                encodeURIComponent(from) + '&tl=' + encodeURIComponent(to) +
+                '&dt=t&q=' + encodeURIComponent(text);
     const r = await fetch(url, { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
@@ -754,15 +852,19 @@
     return out;
   }
 
+  function googleTrialTranslate(text, lang) {
+    return googlePublicTranslate(text, 'ja', lang);
+  }
+
   async function trialTranslate(text, lang) {
-    // 1) MyMemory（CORS可・APIキー不要）
-    try {
-      const t = await mymemoryTranslate(text, lang);
-      return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
-    } catch (e) { /* 次へ */ }
-    // 2) Google の公開エンドポイント（非公式）
+    // 1) Google の公開エンドポイント（APIキー不要・応答が速い → 体感速度を優先）
     try {
       const t = await googleTrialTranslate(text, lang);
+      return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
+    } catch (e) { /* 次へ */ }
+    // 2) MyMemory（遅いが安定）
+    try {
+      const t = await mymemoryTranslate(text, lang);
       return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
     } catch (e) { /* 次へ */ }
     // 3) オフライン：用語集の置換だけ行い、明示する
@@ -783,11 +885,22 @@
   }
 
   async function openaiTranslate(text, lang) {
+    const out = await openaiChat(buildSystemPrompt(lang), buildUserContent(text));
+    return { text: out, engine: 'openai', engineName: 'OpenAI' };
+  }
+
+  async function openaiTranslateToJa(text, srcLang) {
+    const out = await openaiChat(buildReverseSystemPrompt(srcLang), text);
+    return { text: out, engine: 'openai', engineName: 'OpenAI' };
+  }
+
+  async function openaiChat(system, user) {
     const body = {
       model: String(S.openaiModel || 'gpt-6-luna').trim(),
+      temperature: 0,
       messages: [
-        { role: 'system', content: buildSystemPrompt(lang) },
-        { role: 'user', content: buildUserContent(text) }
+        { role: 'system', content: system },
+        { role: 'user', content: user }
       ]
     };
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -802,16 +915,27 @@
     const d = await r.json();
     const out = cleanTr(d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content);
     if (!out) throw new Error('空の応答');
-    return { text: out, engine: 'openai', engineName: 'OpenAI' };
+    return out;
   }
 
   async function geminiTranslate(text, lang) {
+    const out = await geminiChat(buildSystemPrompt(lang), buildUserContent(text));
+    return { text: out, engine: 'gemini', engineName: 'Gemini' };
+  }
+
+  async function geminiTranslateToJa(text, srcLang) {
+    const out = await geminiChat(buildReverseSystemPrompt(srcLang), text);
+    return { text: out, engine: 'gemini', engineName: 'Gemini' };
+  }
+
+  async function geminiChat(system, user) {
     const model = String(S.geminiModel || 'gemini-3.5-flash-lite').trim();
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
                 encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(String(S.geminiKey).trim());
     const body = {
-      systemInstruction: { parts: [{ text: buildSystemPrompt(lang) }] },
-      contents: [{ role: 'user', parts: [{ text: buildUserContent(text) }] }]
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [{ role: 'user', parts: [{ text: user }] }],
+      generationConfig: { temperature: 0 }
     };
     const r = await fetch(url, {
       method: 'POST',
@@ -823,7 +947,40 @@
     const parts = (d && d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) || [];
     const out = cleanTr(parts.map(p => p.text || '').join(''));
     if (!out) throw new Error('空の応答');
-    return { text: out, engine: 'gemini', engineName: 'Gemini' };
+    return out;
+  }
+
+  /* ---------------- ゲストの質問 → 日本語 ---------------- */
+  function buildReverseSystemPrompt(srcLang) {
+    const L = LANG_MAP[srcLang] || LANG_MAP.en;
+    return [
+      'あなたは国際会議の同時通訳者です。ゲストが話した ' + L.native + '（' + L.ja + '）の質問を、自然な日本語に訳してください。',
+      '出力は日本語訳だけ。前置き・解説・括弧書き・原文の繰り返しは書かない。',
+      'ガイドがすぐ読める、簡潔な話し言葉の日本語にする。',
+      '原文にない情報を足さない。数字・人名・社名・日時は正確に。'
+    ].join('\n');
+  }
+
+  async function translateToJa(text, srcLang) {
+    const from = LANG_MAP[srcLang] ? srcLang : 'en';
+    if (from === 'ja') return { text: String(text), engine: 'none', engineName: '日本語', direct: true };
+
+    if (S.engine === 'openai' && String(S.openaiKey || '').trim()) {
+      try { return await openaiTranslateToJa(text, from); }
+      catch (e) { noteEngineError('OpenAI', e, true); }
+    } else if (S.engine === 'gemini' && String(S.geminiKey || '').trim()) {
+      try { return await geminiTranslateToJa(text, from); }
+      catch (e) { noteEngineError('Gemini', e, true); }
+    }
+    try {
+      const t = await googlePublicTranslate(text, from, 'ja');
+      return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
+    } catch (e) { /* 次へ */ }
+    try {
+      const t = await mymemoryTranslateFrom(text, from, 'ja');
+      return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
+    } catch (e) { /* 次へ */ }
+    return { text: String(text), engine: 'offline', engineName: '翻訳できません', degraded: true };
   }
 
   /* ---------------------------------------------------------
@@ -1420,6 +1577,85 @@
     P.conn.send({ t: 'hello', lang: S.myLang || 'en' });
   }
 
+  /* ---------------- 質問（ゲスト → ガイド） ---------------- */
+  function updateQaUI() {
+    const on = P.qOpen !== false;
+    const notice = $('#qNotice');
+    const send = $('#qSend');
+    const mic = $('#qMic');
+    if (notice) notice.classList.toggle('hidden', on);
+    if (send) send.disabled = !on;
+    if (mic) mic.disabled = !on;
+    const btn = $('#btnQAsk');
+    if (btn) btn.classList.toggle('off', !on);
+  }
+
+  function toggleQaCompose(force) {
+    const box = $('#qaCompose');
+    if (!box) return;
+    const show = typeof force === 'boolean' ? force : box.classList.contains('hidden');
+    box.classList.toggle('hidden', !show);
+    if (show) {
+      updateQaUI();
+      const ta = $('#qText');
+      if (ta && !ta.value) ta.focus();
+    } else {
+      stopQMic();
+    }
+  }
+
+  function sendQuestion() {
+    const ta = $('#qText');
+    const text = String((ta && ta.value) || '').replace(/\s+/g, ' ').trim();
+    if (!text) { if (ta) ta.focus(); return; }
+    if (P.qOpen === false) { toast('現在、質問は受け付けていません', 2600); updateQaUI(); return; }
+    if (!P.conn || !P.conn.open) { toast('ガイドにまだ接続していません。少し待ってからもう一度お試しください'); return; }
+    const id = 'gq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    P.conn.send({ t: 'question', id, lang: S.myLang || 'en', text: text.slice(0, 300), ts: Date.now() });
+    if (ta) ta.value = '';
+    stopQMic();
+    toggleQaCompose(false);
+    toast('質問を送りました（ガイドの画面に日本語訳が出ます）');
+  }
+
+  function toggleQMic() {
+    if (P.qRec) { stopQMic(); return; }
+    if (P.qOpen === false) { toast('現在、質問は受け付けていません', 2600); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { toast('このブラウザは音声入力に未対応です。キーボードで入力してください'); return; }
+    const L = LANG_MAP[S.myLang];
+    let rec;
+    try {
+      rec = new SR();
+    } catch (e) { toast('音声入力を開始できませんでした'); return; }
+    rec.lang = L ? L.bcp47 : 'en-US';
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    rec.onresult = (ev) => {
+      let out = '';
+      for (let i = 0; i < ev.results.length; i++) {
+        out += (ev.results[i][0] && ev.results[i][0].transcript) || '';
+      }
+      const ta = $('#qText');
+      if (ta) ta.value = out.trim();
+    };
+    rec.onend = () => { P.qRec = null; $('#qMic').classList.remove('on'); };
+    rec.onerror = () => { P.qRec = null; $('#qMic').classList.remove('on'); };
+    P.qRec = rec;
+    $('#qMic').classList.add('on');
+    try { rec.start(); }
+    catch (e) { P.qRec = null; $('#qMic').classList.remove('on'); toast('音声入力を開始できませんでした'); }
+  }
+
+  function stopQMic() {
+    if (!P.qRec) return;
+    try { P.qRec.stop(); } catch (e) {}
+    P.qRec = null;
+    const b = $('#qMic');
+    if (b) b.classList.remove('on');
+  }
+
   function onHostData(msg) {
     if (!msg || typeof msg !== 'object') return;
     switch (msg.t) {
@@ -1436,7 +1672,15 @@
         (msg.items || []).forEach(it => renderPEntry(it, { silent: true }));
         break;
       case 'init':
+        if (msg.qOpen === false) { P.qOpen = false; updateQaUI(); }
+        else if (msg.qOpen === true) { P.qOpen = true; updateQaUI(); }
         if (!P.joined && S.myLang) sendHello();
+        break;
+      case 'qopen':
+        P.qOpen = msg.open !== false;
+        updateQaUI();
+        if (!P.qOpen && P.qRec) stopQMic();
+        if (!P.qOpen) toast('現在、質問は受け付けていません', 2600);
         break;
     }
   }
@@ -1499,6 +1743,7 @@
     if (!S.pTts) $('#btnTts').classList.remove('on');
     else $('#btnTts').classList.add('on');
     if (VOICE.unlocked) $('#btnVoice').classList.add('hidden');
+    updateQaUI();
     if (A.role === 'participant') P.joined = true;
     if (P.joined && P.conn && P.conn.open) sendHello();
   }
@@ -1515,7 +1760,16 @@
     const tts = $('#btnTts');
     if (tts) {
       tts.classList.toggle('on', !!S.pTts);
-      tts.textContent = S.pTts ? '🔊 自動読み上げ ON' : '🔈 自動読み上げ OFF';
+      tts.textContent = S.pTts ? '🔊 音声 ON' : '🔇 音声 OFF';
+    }
+    const rate = $('#btnRate');
+    if (rate) {
+      rate.textContent = '⏩ ' + rateLabel(speechRate());
+      rate.classList.toggle('on', speechRate() !== 1);
+    }
+    if (A.role === 'participant') {
+      if (S.pTts) requestWakeLock();
+      else releaseWakeLock();
     }
   }
 
@@ -1664,6 +1918,50 @@
     'th':'พร้อม', 'vi':'Sẵn sàng', 'id':'Siap'
   };
 
+  const RATES = [1, 1.15, 1.3];
+  const rateLabel = (v) => (Math.abs(Number(v) - 1) < 0.01 ? '1.0' : String(Number(v))) + 'x';
+  function speechRate() {
+    const v = Number(S.pRate);
+    return RATES.includes(v) ? v : 1;
+  }
+
+  // 音声ONの間は画面を消灯させない（対応端末だけ。失敗しても読み上げは続ける）
+  async function requestWakeLock() {
+    if (A.role !== 'participant' || !S.pTts) return;
+    if (!('wakeLock' in navigator) || !navigator.wakeLock || typeof navigator.wakeLock.request !== 'function') return;
+    if (document.visibilityState !== 'visible') return;      // 非表示中は取得できない
+    if (VOICE.wake && !VOICE.wake.released) return;
+    try {
+      const lock = await navigator.wakeLock.request('screen');
+      VOICE.wake = lock;
+      if (lock && lock.addEventListener) lock.addEventListener('release', () => { VOICE.wake = null; });
+    } catch (e) {
+      VOICE.wake = null;     // 省電力モードなどでは取得できない
+    }
+  }
+
+  function releaseWakeLock() {
+    const lock = VOICE.wake;
+    VOICE.wake = null;
+    if (lock && typeof lock.release === 'function') { try { lock.release(); } catch (e) {} }
+  }
+
+  // Android Chrome は speechSynthesis が長時間の無音で止まることがある → 定期的に叩き起こす
+  function startVoiceWatchdog() {
+    if (VOICE.watchdog) return;
+    VOICE.watchdog = setInterval(() => {
+      if (A.role !== 'participant' || !S.pTts) return;
+      const syn = window.speechSynthesis;
+      if (!syn) return;
+      try { if (syn.paused) syn.resume(); } catch (e) {}
+      // 実際には止まっているのに「話し中」のままになっていたら次へ進める
+      if (VOICE.speaking && !syn.speaking && !syn.pending) {
+        VOICE.speaking = false;
+        pumpSpeech();
+      }
+    }, 5000);
+  }
+
   function unlockVoice() {
     if (!('speechSynthesis' in window)) {
       toast('この端末は読み上げ（音声合成）に対応していません');
@@ -1675,11 +1973,13 @@
       u.lang = LANG_MAP[S.myLang] ? LANG_MAP[S.myLang].bcp47 : 'en-US';
       const v = pickVoice(S.myLang);
       if (v) u.voice = v;
-      u.rate = 1;
+      u.rate = speechRate();
+      u.volume = 1;
       window.speechSynthesis.speak(u);
       VOICE.unlocked = true;
       $('#btnVoice').classList.add('hidden');
-      toast('音声を有効にしました（このあと自動で読み上げます）');
+      requestWakeLock();
+      toast('音声を有効にしました（スピーカーから読み上げます）');
     } catch (e) {
       toast('音声を開始できませんでした');
     }
@@ -1692,7 +1992,7 @@
       $('#btnVoice').classList.remove('hidden');
       return;
     }
-    // 遅れがたまったら古いものを捨てて、今の話に追いつく
+    // 遅れがたまったら古いものを捨てて、今の話に追いつく（最新2件だけ残す）
     if (VOICE.queue.length >= 2) VOICE.queue.shift();
     VOICE.queue.push({ text, lang: langCode });
     pumpSpeech();
@@ -1709,7 +2009,8 @@
     u.lang = L ? L.bcp47 : 'en-US';
     const v = pickVoice(job.lang);
     if (v) u.voice = v;
-    u.rate = 1;
+    u.rate = speechRate();          // 同時通訳のテンポに合わせて 1.0 / 1.15 / 1.3
+    u.volume = 1;                   // スピーカーでもしっかり聞こえる音量
     u.pitch = 1;
     u.onend = () => { VOICE.speaking = false; setTimeout(pumpSpeech, 60); };
     u.onerror = () => { VOICE.speaking = false; setTimeout(pumpSpeech, 60); };
@@ -1807,6 +2108,22 @@
         $('#btnVoice').classList.remove('hidden');
         toast('「音声を有効にする」を1回押すと読み上げが始まります');
       }
+      if (!S.pTts) {
+        VOICE.queue = [];
+        VOICE.speaking = false;
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+        releaseWakeLock();
+      } else {
+        requestWakeLock();
+      }
+    });
+    $('#btnRate').addEventListener('click', () => {
+      const cur = speechRate();
+      const i = RATES.findIndex(v => Math.abs(v - cur) < 0.01);
+      S.pRate = RATES[(i + 1) % RATES.length];
+      saveSettings();
+      applyParticipantLook();
+      toast('読み上げ速度: ' + rateLabel(S.pRate) + '（次の文から適用）');
     });
     $('#btnDisplay').addEventListener('click', () => {
       S.pDisplay = S.pDisplay === 'both' ? 'translation' : S.pDisplay === 'translation' ? 'original' : 'both';
@@ -1826,6 +2143,27 @@
       updateJump();
     });
     $('#pCaptions').addEventListener('scroll', updateJump);
+
+    // 質問（双方向）
+    $('#btnQAsk').addEventListener('click', () => toggleQaCompose());
+    $('#qClose').addEventListener('click', () => toggleQaCompose(false));
+    $('#qSend').addEventListener('click', sendQuestion);
+    $('#qMic').addEventListener('click', toggleQMic);
+    $('#qText').addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') sendQuestion();
+    });
+
+    // ガイド側：質問パネル
+    $('#qToggle').addEventListener('change', (e) => {
+      setQOpen(e.target.checked);
+      toast(e.target.checked ? 'ゲストからの質問を受け付けます' : '質問受付をOFFにしました（接続中のゲスト全員に反映）');
+    });
+    $('#qList').addEventListener('click', (e) => {
+      const btn = e.target.closest('.q-done');
+      if (!btn) return;
+      A.questions = A.questions.filter(q => q.id !== btn.dataset.id);
+      renderQuestions();
+    });
 
     $('#btnHelp').addEventListener('click', () => {
       $('#helpSheet').classList.remove('hidden');
