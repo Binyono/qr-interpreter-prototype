@@ -218,6 +218,8 @@ a{color:var(--accent-2)}
 .interim:not(:empty){
   border-left:3px solid var(--accent-2);padding-left:10px;
 }
+.live-chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.live-chips .chip-btn{font-size:12px}
 .manual-row{display:flex;gap:8px;margin-top:12px;align-items:stretch}
 .manual-row textarea{
   flex:1;min-width:0;resize:vertical;
@@ -246,6 +248,7 @@ a{color:var(--accent-2)}
 .g-text.pending{color:var(--muted);font-style:italic}
 .g-text.degraded{color:#ffcf9c}
 .tag{font-size:10px;padding:1px 5px;border-radius:5px;background:rgba(255,184,77,.16);color:#ffd79a;margin-left:5px}
+.tag.fly{background:rgba(38,209,195,.16);color:#a9f2ea}
 
 /* ---------- footer ---------- */
 .guide-foot{
@@ -355,6 +358,7 @@ a{color:var(--accent-2)}
 .mode-original .p-tr{display:none}
 .mode-original .p-ja{font-size:calc(21px * var(--fs));color:var(--text);font-weight:600}
 .p-tr.pending{color:var(--muted);font-weight:400}
+.p-tr.provisional{opacity:.92}
 .p-tr.pending::after{
   content:"翻訳中…";font-size:12px;letter-spacing:.04em;
   display:inline-block;margin-left:6px;opacity:.8;
@@ -365,6 +369,32 @@ a{color:var(--accent-2)}
   position:absolute;left:0;right:0;top:42%;text-align:center;
   padding:0 24px;color:var(--muted);font-size:13px;
 }
+
+/* ---------- 話している途中のリアルタイム表示 ---------- */
+.p-live{
+  position:relative;padding:12px 13px 13px;border-radius:16px;
+  border:1px dashed rgba(38,209,195,.45);background:rgba(38,209,195,.07);
+  animation:rise .18s ease-out;
+}
+.p-live::before{
+  content:"● 同時通訳中";display:block;font-size:10px;letter-spacing:.08em;
+  color:var(--accent-2);margin-bottom:7px;animation:blink 1.4s infinite;
+}
+.p-live-tr{
+  margin:0;font-size:calc(23px * var(--fs));line-height:1.45;
+  font-weight:600;color:#eafaf8;word-break:break-word;
+}
+.p-live-tr:empty::after{
+  content:"聞き取り中…";font-size:13px;letter-spacing:.04em;
+  color:var(--muted);font-weight:400;
+}
+.p-live-ja{
+  margin:7px 0 0;font-size:calc(13px * var(--fs));line-height:1.5;
+  color:var(--muted);word-break:break-word;
+}
+.mode-translation .p-live-ja{display:none}
+.mode-original .p-live-tr{display:none}
+.mode-original .p-live-ja{font-size:calc(21px * var(--fs));color:var(--text);font-weight:600}
 .p-waiting p{margin:10px 0 0}
 .wave{display:inline-flex;gap:4px;align-items:flex-end;height:18px}
 .wave span{width:4px;height:8px;border-radius:2px;background:var(--accent-2);animation:w 1s infinite ease-in-out}

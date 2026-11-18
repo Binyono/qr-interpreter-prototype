@@ -38,6 +38,10 @@
     asr: 'webspeech',                   // webspeech | transcribe
     transcribeModel: 'gpt-transcribe',
     chunkSec: 6,
+    flushMs: 750,                       // 息継ぎ（無音）で確定するまでの待ち
+    maxChars: 20,                       // この文字数を超えたら区切って確定
+    prefetch: true,                     // 先行翻訳モード（低遅延）
+    interimMs: 380,                     // 途中文字を送る間隔（300〜450ms）
     glossary: [],                       // [{ja, tr}]
     previewLangs: ['en', 'zh-CN', 'ko'],
     peerHost: '',
@@ -57,6 +61,11 @@
     { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
   ));
   const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, Number(n)));
+  // 表記ゆれ（空白・句読点・大小文字）を落として比べる
+  const norm = (s) => String(s == null ? '' : s)
+    .replace(/[\s\u3000]+/g, '')
+    .replace(/[。．.、，,！!？?…‥「」『』（）()\[\]【】\-ー~〜]/g, '')
+    .toLowerCase();
   const timeLabel = (ts) => {
     const d = new Date(ts || Date.now());
     return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -92,6 +101,7 @@
     try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* 容量不足などは無視 */ }
     updateEnginePill();
     updateAsrLabel();
+    updateLatencyUI();
   }
 
   /* ---------------------------------------------------------
@@ -114,7 +124,18 @@
     transcribeOn: false,
     finalBuf: '',
     finalTimer: null,
-    lastEngineErrorAt: 0
+    lastEngineErrorAt: 0,
+    // 途中文字（interim）の配信
+    interimText: '',
+    interimTimer: null,
+    interimSentAt: 0,
+    lastInterimSent: '',
+    // 先行翻訳（確定前に訳を作っておく）
+    pre: { text: '', at: 0, tr: {} },
+    preTimer: null,
+    preSeq: 0,
+    // 直前の確定文（途中文字→確定の二重表示よけ）
+    recentPublished: []
   };
 
   const P = {
@@ -144,6 +165,7 @@
     bindUI();
     updateEnginePill();
     updateAsrLabel();
+    updateLatencyUI();
     applyParticipantLook();
 
     if ('speechSynthesis' in window) {
@@ -338,23 +360,25 @@
   function bindHostPeer(peer) {
     peer.on('connection', (conn) => {
       const key = conn.peer + '#' + (++A.connSeq);
-      const rec = { id: A.connSeq, key, conn, lang: null, joined: Date.now() };
+      // 接続要求が来ただけでは「参加者」に数えない。ラベル open 待ち。
+      const rec = { id: A.connSeq, key, conn, lang: null, joined: Date.now(), open: false };
       A.conns.set(key, rec);
 
       conn.on('open', () => {
-        // hello を待つが、先に init を送っておく
+        // 回線が開通してから「接続中の参加者」としてカウント・一覧表示する
+        rec.open = true;
+        rec.openedAt = Date.now();
+        renderParticipants();
+        setGuideStatus('live', '配信中');
         sendTo(rec, { t: 'init', room: A.room, ts: Date.now() });
       });
       conn.on('data', (data) => onGuestData(rec, data));
       conn.on('close', () => {
         A.conns.delete(key);
         renderParticipants();
-        if (A.conns.size === 0 && A.peer) setGuideStatus('wait', '参加者を待っています');
+        if (!openConns().length && A.peer) setGuideStatus('wait', '参加者を待っています');
       });
       conn.on('error', (e) => console.warn('[conn]', e && e.type));
-
-      renderParticipants();
-      setGuideStatus('live', '配信中');
     });
 
     peer.on('disconnected', () => {
@@ -371,6 +395,10 @@
       }
       console.warn('[peer]', type, err && err.message);
     });
+  }
+
+  function openConns() {
+    return Array.from(A.conns.values()).filter(r => r.open && r.conn && r.conn.open);
   }
 
   function onGuestData(rec, msg) {
@@ -419,7 +447,7 @@
   }
 
   function renderParticipants() {
-    const list = Array.from(A.conns.values());
+    const list = openConns();
     $('#peerCount').textContent = String(list.length);
 
     const counts = new Map();
@@ -457,13 +485,38 @@
   }
 
   /* ---------------- 字幕の配信 ---------------- */
+  function rememberPublished(ja, at) {
+    A.recentPublished.push({ n: norm(ja), at });
+    if (A.recentPublished.length > 12) A.recentPublished.shift();
+  }
+
+  // 途中文字を確定として出した直後に、同じ文が確定結果として来る場合の二重表示よけ
+  function isRecentDuplicate(ja) {
+    const now = Date.now();
+    A.recentPublished = A.recentPublished.filter(r => now - r.at < 5000);
+    const n = norm(ja);
+    if (!n) return true;
+    for (const r of A.recentPublished) {
+      if (r.n === n) return true;
+      if (n.length >= 6 && r.n.startsWith(n)) return true;
+    }
+    return false;
+  }
+
   async function publishCaption(rawJa) {
     const ja = String(rawJa || '').trim();
     if (!ja) return;
+    if (isRecentDuplicate(ja)) return;
     const t = Date.now();
-    if (ja === A.lastSent && t - A.lastSentAt < 1200) return;   // 二重送信よけ
-    A.lastSent = ja;
-    A.lastSentAt = t;
+    rememberPublished(ja, t);
+
+    // 途中表示とそのタイマーを片付ける（確定文が来たら役目は終わり）
+    A.interimText = '';
+    A.lastInterimSent = '';
+    if (A.interimTimer) { clearTimeout(A.interimTimer); A.interimTimer = null; }
+    if (A.preTimer) { clearTimeout(A.preTimer); A.preTimer = null; }
+    const im = $('#interim');
+    if (im) im.textContent = '';
 
     const item = { id: 'c' + (++A.seq), ja, tr: {}, ts: t };
     A.history.push(item);
@@ -473,7 +526,25 @@
     broadcast({ t: 'cap', id: item.id, ja: item.ja, ts: item.ts });
 
     const langs = targetLangs();
-    await Promise.all(langs.map(async (lang) => {
+    const cached = {};
+    const todo = [];
+    for (const lang of langs) {
+      const pre = takePrefetch(ja, lang);
+      if (pre) {
+        // 先行翻訳が当たっていれば、確定した瞬間に訳を出す（待ち時間ほぼゼロ）
+        item.tr[lang] = pre;
+        cached[lang] = pre;
+        if (pre.provisional) todo.push(lang);   // 途中までの訳 → 後で差し替え
+      } else {
+        todo.push(lang);
+      }
+    }
+    if (Object.keys(cached).length) {
+      syncGuideEntry(item);
+      broadcast({ t: 'tr', id: item.id, tr: cached });
+    }
+
+    await Promise.all(todo.map(async (lang) => {
       const res = await translateOne(ja, lang);
       item.tr[lang] = res;
       syncGuideEntry(item);
@@ -481,9 +552,68 @@
     }));
   }
 
+  /* ---------------- 先行翻訳（低遅延） ---------------- */
+  // 途中文字が確定文と一致（またはその先頭部分）なら、作っておいた訳を使う
+  function takePrefetch(text, lang) {
+    const cur = norm(text);
+    const hit = A.pre && A.pre.tr && A.pre.tr[lang];
+    if (!cur || !hit || !hit.text) return null;
+    const base = norm(A.pre.text);
+    if (!base) return null;
+    const out = {
+      text: hit.text, engine: hit.engine, engineName: hit.engineName,
+      degraded: !!hit.degraded, prefetched: true
+    };
+    if (base === cur) return out;
+    if (base.length >= 6 && cur.startsWith(base) && base.length / cur.length >= 0.6) {
+      out.provisional = true;
+      return out;
+    }
+    return null;
+  }
+
+  // 途中文字の表示用（完全一致のときだけ、ちらつかないよう訳を添える）
+  function preCacheFor(text, lang) {
+    const cur = norm(text);
+    const hit = A.pre && A.pre.tr && A.pre.tr[lang];
+    if (!cur || !hit || !hit.text) return null;
+    if (norm(A.pre.text) !== cur) return null;
+    return { text: hit.text, prefetched: true };
+  }
+
+  function maybePrefetch(text, immediate) {
+    if (!S.prefetch) return;
+    if (A.preTimer) { clearTimeout(A.preTimer); A.preTimer = null; }
+    const t = String(text || '').trim();
+    if (t.length < (S.engine === 'trial' ? 8 : 4)) return;
+    const minGap = S.engine === 'trial' ? 1200 : 500;   // 連続で叩きすぎない
+    const wait = immediate ? 0 : Math.max(700, minGap - (Date.now() - (A.pre.at || 0)));
+    A.preTimer = setTimeout(() => { A.preTimer = null; runPrefetch(); }, wait);
+  }
+
+  async function runPrefetch() {
+    if (!S.prefetch) return;
+    const t = String(A.interimText || '').trim();
+    if (!t) return;
+    if (norm(t) === norm(A.pre.text) && A.pre.tr && Object.keys(A.pre.tr).length) return;
+    // 聞いている人がいる言語だけ。誰もいない間に無料APIを叩かない
+    const langs = Array.from(new Set(openConns().map(r => r.lang).filter(Boolean)));
+    if (!langs.length) return;
+    const seq = ++A.preSeq;
+    const results = {};
+    await Promise.all(langs.map(async (lang) => {
+      try { results[lang] = await translateOne(t, lang, { quiet: true }); }
+      catch (e) { /* 先行翻訳の失敗は黙って捨てる */ }
+    }));
+    if (seq !== A.preSeq) return;    // もっと新しい先行翻訳が走っている
+    A.pre = { text: t, at: Date.now(), tr: results };
+    // まだ話している途中なら、できた訳をすぐ参加者へ（確定を待たない）
+    if (A.interimText === t && Object.keys(results).length) sendInterim(true);
+  }
+
   function targetLangs() {
     const set = new Set();
-    for (const rec of A.conns.values()) if (rec.lang) set.add(rec.lang);
+    for (const rec of openConns()) if (rec.lang) set.add(rec.lang);
     if (!set.size) (S.previewLangs || []).forEach(l => { if (LANG_MAP[l]) set.add(l); });
     return Array.from(set);
   }
@@ -509,6 +639,7 @@
     while (log.children.length > 60) log.removeChild(log.lastElementChild);
   }
 
+  // 先行翻訳の「途中経過」表示（ガイド画面上）
   function syncGuideEntry(item) {
     const el = document.querySelector('.g-entry[data-id="' + item.id + '"]');
     if (!el) return;
@@ -522,7 +653,8 @@
       const r = item.tr[code];
       const cls = r ? (r.degraded ? 'g-text degraded' : 'g-text') : 'g-text pending';
       const text = r ? esc(r.text) : '翻訳中…';
-      const tag = r && r.degraded ? '<span class="tag">簡易</span>' : '';
+      const tag = r && r.degraded ? '<span class="tag">簡易</span>'
+                : r && r.prefetched ? '<span class="tag fly">先行</span>' : '';
       return '<div class="g-row"><span class="g-flag">' + L.flag + '</span>' +
              '<span class="g-lang">' + esc(L.ja) + '</span>' +
              '<span class="' + cls + '">' + text + tag + '</span></div>';
@@ -571,22 +703,23 @@
     return out.trim();
   }
 
-  async function translateOne(ja, lang) {
+  async function translateOne(ja, lang, opts = {}) {
     const useOpenAI = S.engine === 'openai' && String(S.openaiKey || '').trim();
     const useGemini = S.engine === 'gemini' && String(S.geminiKey || '').trim();
 
     if (useOpenAI) {
       try { return await openaiTranslate(ja, lang); }
-      catch (e) { noteEngineError('OpenAI', e); }
+      catch (e) { noteEngineError('OpenAI', e, opts.quiet); }
     } else if (useGemini) {
       try { return await geminiTranslate(ja, lang); }
-      catch (e) { noteEngineError('Gemini', e); }
+      catch (e) { noteEngineError('Gemini', e, opts.quiet); }
     }
     return await trialTranslate(ja, lang);
   }
 
-  function noteEngineError(name, err) {
+  function noteEngineError(name, err, quiet) {
     console.warn('[' + name + ']', err && err.message);
+    if (quiet) return;   // 先行翻訳の失敗はトーストにしない
     const now = Date.now();
     if (now - A.lastEngineErrorAt < 20000) return;
     A.lastEngineErrorAt = now;
@@ -754,7 +887,7 @@
         if (res.isFinal) queueFinal(txt);
         else interim += txt;
       }
-      $('#interim').textContent = interim ? '「' + interim + '」' : '';
+      pushInterim(interim);
     };
 
     rec.onerror = (ev) => {
@@ -796,22 +929,65 @@
     setMicUI(false);
   }
 
-  // 短い確定結果を少しだけまとめて、文の切れ目で送る（区切り最適化）
+  /* ---------------- 途中文字（interim）のリアルタイム配信 ---------------- */
+  // Web Speech が返す「まだ確定していない認識結果」を、300〜450ms 間隔で
+  // 参加者の端末へそのまま送る（一文が終わるのを待たない）
+  function pushInterim(text) {
+    const t = String(text || '').trim();
+    A.interimText = t;
+    const el = $('#interim');
+    if (el) el.textContent = t ? '「' + t + '」' : '';
+    scheduleInterimSend();
+  }
+
+  function scheduleInterimSend() {
+    if (A.interimTimer) return;                        // 送信は予約済み（スロットリング）
+    const gap = clamp(Number(S.interimMs) || 380, 300, 450);
+    const wait = Math.max(0, gap - (Date.now() - A.interimSentAt));
+    if (!wait) { sendInterim(); return; }
+    A.interimTimer = setTimeout(() => { A.interimTimer = null; sendInterim(); }, wait);
+  }
+
+  function sendInterim(force) {
+    A.interimTimer = null;
+    const text = A.interimText;
+    if (!force && text === A.lastInterimSent) return;
+    if (!text && !A.lastInterimSent) return;
+    A.lastInterimSent = text;
+    A.interimSentAt = Date.now();
+    for (const rec of openConns()) {
+      const tr = rec.lang && text ? preCacheFor(text, rec.lang) : null;
+      sendTo(rec, { t: 'interim', ja: text, ts: A.interimSentAt, tr: tr ? { [rec.lang]: tr } : {} });
+    }
+    if (text) maybePrefetch(text);
+  }
+
+  // 短い区切りを優先して、話している最中でも確定分をどんどん翻訳へ回す
+  function joinChunk(buf, t) {
+    if (!buf) return t;
+    return /[A-Za-z0-9]$/.test(buf) ? buf + ' ' + t : buf + t;
+  }
+
   function queueFinal(text) {
     const t = String(text || '').trim();
     if (!t) return;
-    A.finalBuf = (A.finalBuf ? A.finalBuf + ' ' : '') + t;
+    A.finalBuf = joinChunk(A.finalBuf, t);
     clearTimeout(A.finalTimer);
     const endsSentence = /[。．.！？!?…]$/.test(t);
-    if (endsSentence || A.finalBuf.length >= 70) flushFinal();
-    else A.finalTimer = setTimeout(flushFinal, 650);
+    const maxChars = clamp(Number(S.maxChars) || 20, 10, 60);
+    const flushMs = clamp(Number(S.flushMs) || 750, 400, 1500);
+    if (endsSentence || A.finalBuf.length >= maxChars) { flushFinal(); return; }
+    A.finalTimer = setTimeout(flushFinal, flushMs);
   }
 
   function flushFinal() {
     clearTimeout(A.finalTimer);
+    A.finalTimer = null;
     const t = A.finalBuf.trim();
     A.finalBuf = '';
-    $('#interim').textContent = '';
+    A.interimText = '';
+    const el = $('#interim');
+    if (el) el.textContent = '';
     if (t) publishCaption(t);
   }
 
@@ -1015,6 +1191,9 @@
   function onHostData(msg) {
     if (!msg || typeof msg !== 'object') return;
     switch (msg.t) {
+      case 'interim':
+        renderInterim(msg);
+        break;
       case 'cap':
         renderPEntry({ id: msg.id, ja: msg.ja, ts: msg.ts, tr: {} });
         break;
@@ -1109,11 +1288,50 @@
   }
 
   /* ---------------- 字幕の描画 ---------------- */
+  // ガイドが話している途中の日本語（と、あれば先行の訳）をリアルタイムに出す
+  function renderInterim(msg) {
+    const box = $('#pCaptions');
+    if (!box) return;
+    const ja = String(msg.ja || '').trim();
+    let el = box.querySelector('.p-live');
+    if (!ja) {
+      if (el) el.remove();
+      return;
+    }
+    const wait = $('#pWaiting');
+    if (wait) wait.remove();
+
+    if (!el) {
+      el = document.createElement('article');
+      el.className = 'p-live';
+      el.innerHTML = '<p class="p-live-tr empty" data-ltr></p>' +
+                     '<p class="p-live-ja" data-lja></p>';
+      box.appendChild(el);
+    }
+    el.querySelector('[data-lja]').textContent = ja;
+
+    const tr = msg.tr && S.myLang ? msg.tr[S.myLang] : null;
+    const trEl = el.querySelector('[data-ltr]');
+    if (tr && tr.text) {
+      trEl.textContent = tr.text;
+      trEl.className = 'p-live-tr';
+    } else {
+      trEl.textContent = '';
+      trEl.className = 'p-live-tr empty';
+    }
+
+    P.lastCaptionAt = Date.now();
+    scrollToLatest();
+    updateJump();
+  }
+
   function renderPEntry(item, opts = {}) {
     const box = $('#pCaptions');
     if (!box) return;
     const wait = $('#pWaiting');
     if (wait) wait.remove();
+    const live = box.querySelector('.p-live');
+    if (live) live.remove();          // 確定文が来たら途中表示は消す
 
     const existing = box.querySelector('.p-entry[data-id="' + item.id + '"]');
     if (existing) { applyTr(item.id, item.tr || {}); return; }
@@ -1145,12 +1363,17 @@
 
   function fillPEntry(el, tr, silent) {
     const p = el.querySelector('[data-tr]');
-    if (!p || p.dataset.filled === '1') return;
+    if (!p) return;
+    // 先行翻訳の「途中までの訳」は、あとから本番の訳で上書きする
+    const replaceProv = p.dataset.filled === '1' && p.dataset.prov === '1' && !tr.provisional;
+    if (p.dataset.filled === '1' && !replaceProv) return;
     p.textContent = tr.text;
     p.classList.remove('pending');
     p.classList.toggle('degraded', !!tr.degraded);
+    p.classList.toggle('provisional', !!tr.provisional);
     p.dataset.filled = '1';
-    if (!silent && S.pTts) speakQueue(tr.text, S.myLang);
+    p.dataset.prov = tr.provisional ? '1' : '0';
+    if (!silent && !tr.provisional && S.pTts) speakQueue(tr.text, S.myLang);
     if (!silent && !VOICE.unlocked) {
       $('#btnVoice').classList.remove('hidden');
     }
@@ -1310,6 +1533,15 @@
     $$('input[name="engine"]').forEach(r => r.addEventListener('change', updateEngineFields));
     $$('input[name="asr"]').forEach(r => r.addEventListener('change', updateAsrFields));
 
+    // 先行翻訳（低遅延）のクイックトグル
+    $('#btnPrefetch').addEventListener('click', () => {
+      S.prefetch = !S.prefetch;
+      saveSettings();
+      toast(S.prefetch
+        ? '先行翻訳モードをONにしました（話している途中から訳を用意します）'
+        : '先行翻訳モードをOFFにしました');
+    });
+
     $('#btnGlossAdd').addEventListener('click', addGloss);
     $('#glossTr').addEventListener('keydown', (e) => { if (e.key === 'Enter') addGloss(); });
     $('#glossList').addEventListener('click', (e) => {
@@ -1436,6 +1668,10 @@
     $('#pFont').value = S.pFont || 1;
     $('#pTts').checked = !!S.pTts;
 
+    $('#prefetch').checked = !!S.prefetch;
+    $('#flushMs').value = S.flushMs || 750;
+    $('#maxChars').value = S.maxChars || 20;
+
     renderGloss();
     renderPreviewChecks();
     updateEngineFields();
@@ -1463,6 +1699,10 @@
     S.pDisplay = $('#pDisplay').value;
     S.pFont = clamp($('#pFont').value, 0.85, 1.5);
     S.pTts = $('#pTts').checked;
+
+    S.prefetch = $('#prefetch').checked;
+    S.flushMs = clamp($('#flushMs').value || 750, 400, 1500);
+    S.maxChars = clamp($('#maxChars').value || 20, 10, 60);
 
     saveSettings();
     applyParticipantLook();
@@ -1502,6 +1742,21 @@
     el.textContent = S.asr === 'transcribe'
       ? '音声認識: ' + (S.transcribeModel || 'gpt-transcribe') + '（' + (Number(S.chunkSec) || 6) + '秒区切り）'
       : '音声認識: Web Speech（ja-JP）';
+  }
+
+  const secLabel = (ms) => (clamp(ms, 400, 1500) / 1000).toFixed(2).replace(/\.?0+$/, '');
+
+  function updateLatencyUI() {
+    const btn = $('#btnPrefetch');
+    if (btn) {
+      btn.classList.toggle('on', !!S.prefetch);
+      btn.textContent = S.prefetch ? '⚡ 先行翻訳 ON' : '⚡ 先行翻訳 OFF';
+    }
+    const el = $('#latencyMode');
+    if (el) {
+      el.textContent = '区切り: 息継ぎ ' + secLabel(Number(S.flushMs) || 750) + '秒 / ' +
+                       clamp(Number(S.maxChars) || 20, 10, 60) + '文字';
+    }
   }
 
   function renderGloss() {

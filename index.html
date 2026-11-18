@@ -74,6 +74,10 @@
         </div>
       </div>
       <p id="interim" class="interim" aria-live="polite"></p>
+      <div class="live-chips">
+        <button id="btnPrefetch" class="chip-btn on" type="button">⚡ 先行翻訳 ON</button>
+        <span id="latencyMode" class="muted small"></span>
+      </div>
       <div id="micNote" class="mic-note"></div>
       <div class="manual-row">
         <textarea id="manualText" rows="2" placeholder="マイクが使えない時は、ここに日本語を入力して送信（テスト用）"></textarea>
@@ -185,6 +189,17 @@
         <label for="chunkSec" class="small muted">区切りの長さ（秒）</label>
         <input id="chunkSec" type="number" min="3" max="15" step="1">
       </div>
+    </div>
+
+    <div class="sheet-section" data-mode="guide">
+      <h3>低遅延（同時通訳らしさ）</h3>
+      <label class="switch-row"><span>先行翻訳モード（低遅延）</span><input id="prefetch" type="checkbox"></label>
+      <p class="muted small">ONにすると、話している途中の認識結果から訳を先に作っておき、文が確定した瞬間にほぼ待ち時間なしで訳文を出します。お試しモードでは無料APIを呼ぶ回数が増えるので、本番はOpenAI / GeminiのAPIキー設定を推奨します。</p>
+      <div class="field-row">
+        <div><label for="flushMs" class="small muted">息継ぎで確定するまで（ms）</label><input id="flushMs" type="number" min="400" max="1500" step="50"></div>
+        <div><label for="maxChars" class="small muted">区切りの文字数</label><input id="maxChars" type="number" min="10" max="60" step="2"></div>
+      </div>
+      <p class="muted small">短く区切るほど早く出ますが、訳の精度は少し落ちます。既定は 750ms / 20文字。話している途中の日本語は、この設定に関係なく参加者の画面にリアルタイムで届きます。</p>
     </div>
 
     <div class="sheet-section" data-mode="guide">
