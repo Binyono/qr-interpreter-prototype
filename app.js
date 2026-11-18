@@ -1706,7 +1706,10 @@
 
     saveSettings();
     applyParticipantLook();
-    if (A.role === 'guide' && A.peer) setGuideStatus('live', '配信中');
+    if (A.role === 'guide' && A.peer) {
+      if (openConns().length) setGuideStatus('live', '配信中');
+      else setGuideStatus('wait', '参加者を待っています');
+    }
     closeSheet();
     toast('設定を保存しました');
   }
