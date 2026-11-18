@@ -1624,6 +1624,7 @@
     }
     lines.push('');
     lines.push('— ' + G.thanks);
+    lines.push('');
     lines.push('QR同時通訳 / QR Live Interpreter  ·  ROOM ' + (A.room || ''));
     return lines.join('\n');
   }
