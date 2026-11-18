@@ -2431,7 +2431,10 @@
   }
 
   function highlightLang() {
-    $$('.lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === S.myLang));
+    // 言語を選ぶ前の画面では「選んだ」ように見せない（推測した言語を強調しない）
+    const pick = $('#pLangPick');
+    const onPickScreen = !!pick && !pick.classList.contains('hidden');
+    $$('.lang-btn').forEach(b => b.classList.toggle('on', !onPickScreen && b.dataset.lang === S.myLang));
     const tag = $('#pLangTag');
     if (tag) {
       const L = LANG_MAP[S.myLang];
