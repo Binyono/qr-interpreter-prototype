@@ -127,10 +127,15 @@
     finalTimer: null,
     lastEngineErrorAt: 0,
     // 途中文字（interim）の配信
-    interimText: '',
+    interimText: '',      // ライブ行に出す「まだ訳していない残り」
+    interimRaw: '',       // ブラウザが返している未確定テキスト全体
     interimTimer: null,
     interimSentAt: 0,
     lastInterimSent: '',
+    // 話し続け対応：interim からの強制確定
+    committedPrefix: '',  // この認識結果のうち、すでに強制確定して訳した先頭部分
+    chunkTimer: null,     // 息継ぎで強制確定するタイマー
+    afterCommit: false,   // 強制確定の直後（残り末尾の拾い上げ用）
     // 先行翻訳（確定前に訳を作っておく）
     pre: { text: '', at: 0, tr: {} },
     preTimer: null,
@@ -926,12 +931,15 @@
 
     rec.onresult = (ev) => {
       let interim = '';
+      const finals = [];
       for (let i = ev.resultIndex; i < ev.results.length; i++) {
         const res = ev.results[i];
         const txt = (res[0] && res[0].transcript || '').trim();
-        if (res.isFinal) queueFinal(txt);
+        if (res.isFinal) finals.push(txt);
         else interim += txt;
       }
+      // 確定結果が来たら、すでに強制確定した先頭分を差し引いて末尾だけを訳す
+      for (const f of finals) queueFinal(f);
       pushInterim(interim);
     };
 
@@ -993,12 +1001,195 @@
   /* ---------------- 途中文字（interim）のリアルタイム配信 ---------------- */
   // Web Speech が返す「まだ確定していない認識結果」を、300〜450ms 間隔で
   // 参加者の端末へそのまま送る（一文が終わるのを待たない）
-  function pushInterim(text) {
-    const t = String(text || '').trim();
-    A.interimText = t;
+  function showInterim(text) {
+    A.interimText = text;
     const el = $('#interim');
-    if (el) el.textContent = t ? '「' + t + '」' : '';
+    if (el) el.textContent = text ? '「' + text + '」' : '';
+  }
+
+  function pushInterim(text) {
+    A.interimRaw = String(text || '').trim();
+    // 前の区切りとまったく重ならない＝新しい認識結果に切り替わった
+    if (A.committedPrefix && !similarHead(A.interimRaw, A.committedPrefix)) {
+      A.committedPrefix = '';
+    }
+    const p = pendingText();
+    showInterim(p.text);
     scheduleInterimSend();
+    considerForceChunk(p.text);
+  }
+
+  /* ---- 話し続け対応：interim からの強制確定 ----
+     Android Chrome は話し続けている間ずっと isFinal=false（interim）を返すため、
+     確定を待たずに、溜まった未確定分を区切って翻訳・配信へ回す。 */
+  function chunkChars() {
+    const raw = S.chunkChars != null ? S.chunkChars : S.maxChars;
+    return clamp(Number(raw) || 20, 10, 60);
+  }
+
+  function chunkPauseMs() {
+    const raw = S.chunkPauseMs != null ? S.chunkPauseMs : S.flushMs;
+    return clamp(Number(raw) || 750, 300, 2000);
+  }
+
+  // 生テキストから「すでに強制確定した先頭部分」を差し引いた残り（必ず raw の末尾部分）
+  function cutCommitted(raw, prefix) {
+    const f = String(raw || '');
+    const p = String(prefix || '');
+    if (!p) return f;
+    if (!f) return '';
+    if (f.startsWith(p)) return f.slice(p.length);
+    const nf = norm(f), np = norm(p);
+    if (!np) return f;
+    if (nf === np) return '';                                  // まるごと既確定
+    if (nf.startsWith(np)) {
+      // 句読点・空白の表記ゆれを挟んで一致 → 表記を無視して先頭から消費する
+      let consumed = 0, i = 0;
+      while (i < f.length && consumed < np.length) {
+        if (norm(f[i])) consumed++;
+        i++;
+      }
+      return f.slice(i);
+    }
+    // 音声認識の途中修正で先頭が少し揺れた場合：一致した頭の長さで切る
+    let n = 0;
+    while (n < f.length && n < p.length && f[n] === p[n]) n++;
+    if (n >= Math.max(4, Math.ceil(p.length * 0.5))) return f.slice(n);
+    if (nf.endsWith(np)) return '';                            // 既確定分の繰り返し
+    // ひらがな→漢字の変換などで先頭が書き換わった場合：
+    // ほぼ同じ内容なら、長さの差から後ろに増えた分だけを新しい内容とみなす
+    if (similarHead(f, p)) {
+      const extra = f.length - p.length;
+      if (extra <= 0) return '';
+      if (extra <= p.length) return f.slice(p.length);
+    }
+    return f;
+  }
+
+  // 順序を保った共通文字数（LCS）。書き換えの度合いを見る
+  function lcsLen(a, b) {
+    const m = a.length, n = b.length;
+    if (!m || !n) return 0;
+    let prev = new Array(n + 1).fill(0);
+    for (let i = 1; i <= m; i++) {
+      const cur = new Array(n + 1).fill(0);
+      for (let j = 1; j <= n; j++) {
+        cur[j] = a[i - 1] === b[j - 1] ? prev[j - 1] + 1 : Math.max(prev[j], cur[j - 1]);
+      }
+      prev = cur;
+    }
+    return prev[n];
+  }
+
+  // 既確定の先頭とほぼ同じ内容か（漢字変換などの書き換えを許して比べる）
+  function similarHead(raw, prefix) {
+    const p = String(prefix || '');
+    if (!p) return true;
+    const f = String(raw || '');
+    if (!f) return false;
+    return lcsLen(p, f.slice(0, p.length + 6)) / p.length >= 0.6;
+  }
+
+  // 未確定分の現在値（raw 全体・既確定分を除いた残り・頭の区切り記号を除いた表示用テキスト）
+  function pendingText() {
+    const rawFull = String(A.interimRaw || '');
+    const rest = cutCommitted(rawFull, A.committedPrefix);
+    const trimmed = rest.replace(/^[\s\u3000、。，．,.！!？?…‥・]+/, '');
+    return {
+      rawFull,
+      rest,
+      base: rawFull.length - rest.length,       // 残りが raw で始まる位置
+      lead: rest.length - trimmed.length,        // 頭の区切り記号の数
+      text: trimmed.trim()
+    };
+  }
+
+  // 自然な切れ目（句読点・空白・助詞のあと）を探す。無ければ上限の位置で切る
+  function naturalCut(t, limit, minChars) {
+    const head = t.slice(0, limit);
+    const punctMin = Math.max(6, Math.ceil(minChars * 0.5));   // 句読点なら短くても切る
+    const particleMin = minChars;                              // 助詞はもう少し長いときだけ
+    let bestPunct = -1;
+    let bestParticle = -1;
+    let m;
+    const punct = /[。．！？!?、，,.…‥\s\u3000]/g;
+    while ((m = punct.exec(head))) {
+      const at = (m[0] === ' ' || m[0] === '\u3000') ? m.index : m.index + 1;
+      if (at > bestPunct) bestPunct = at;
+    }
+    const particle = /[はがをにでとものへやねよか]/g;
+    while ((m = particle.exec(head))) {
+      const at = m.index + 1;
+      if (at > bestParticle) bestParticle = at;
+    }
+    if (bestPunct >= punctMin) return bestPunct;
+    if (bestParticle >= particleMin) return bestParticle;
+    return limit;
+  }
+
+  // 未確定分の先頭 cutLen 文字をチャンクとして確定・翻訳・配信する
+  function commitPending(cutLen) {
+    const p = pendingText();
+    const len = clamp(cutLen, 1, p.text.length);
+    const piece = p.text.slice(0, len).trim();
+    if (!piece) return;
+    clearTimeout(A.chunkTimer);
+    A.chunkTimer = null;
+    // 既確定の先頭を raw テキストの位置で正確に伸ばす（重複・欠落よけ）
+    const end = p.base + p.lead + len;
+    A.committedPrefix = p.rawFull.slice(0, end);
+    A.afterCommit = true;
+    A.finalBuf = joinChunk(A.finalBuf, piece);
+    flushFinal({ keepInterim: true });   // 即翻訳・配信
+
+    const rest = pendingText();
+    showInterim(rest.text);
+    A.lastInterimSent = '';
+    if (rest.text) {
+      scheduleInterimSend();
+      considerForceChunk(rest.text);
+    }
+  }
+
+  // 未確定分が区切りの条件を満たしたら、isFinal を待たずに確定へ回す
+  function considerForceChunk(pending) {
+    const t = String(pending == null ? pendingText().text : pending);
+    clearTimeout(A.chunkTimer);
+    A.chunkTimer = null;
+    if (!t) return;
+
+    const minChars = chunkChars();
+    const limit = Math.max(minChars + 15, 35);      // 上限（これを超えたら待たない）
+    const pause = chunkPauseMs();
+
+    // b) 上限を超えたら、自然な切れ目（無ければ上限の位置）で即確定
+    if (t.length >= limit) {
+      commitPending(naturalCut(t, limit, minChars));
+      return;
+    }
+    // c) 句読点で文が切れた直後で、ある程度の長さがあるとき
+    if (/[。．！？!?…]$/.test(t) && t.length >= Math.max(8, Math.ceil(minChars * 0.5))) {
+      commitPending(t.length);
+      return;
+    }
+    // a) 設定文字数に達したあと、変化が止まって息継ぎ時間が経ったとき
+    if (t.length >= minChars) {
+      A.afterCommit = false;
+      A.chunkTimer = setTimeout(() => {
+        A.chunkTimer = null;
+        const cur = pendingText().text;
+        if (cur === t && cur.length >= minChars) commitPending(cur.length);
+      }, pause);
+      return;
+    }
+    // 強制確定の直後に残った短い末尾は、長めの息継ぎで拾う
+    if (A.afterCommit && t.length >= 4) {
+      A.chunkTimer = setTimeout(() => {
+        A.chunkTimer = null;
+        const cur = pendingText().text;
+        if (cur === t) commitPending(cur.length);
+      }, Math.round(pause * 2));
+    }
   }
 
   function scheduleInterimSend() {
@@ -1030,25 +1221,42 @@
   }
 
   function queueFinal(text) {
-    const t = String(text || '').trim();
-    if (!t) return;
-    A.finalBuf = joinChunk(A.finalBuf, t);
+    const raw = String(text || '').trim();
+    if (!raw) return;
+    // すでに強制確定した先頭を差し引いて、まだ訳していない末尾だけにする
+    let tail = cutCommitted(raw, A.committedPrefix);
+    tail = String(tail || '').replace(/^[\s\u3000、。，．,.！!？?…‥・]+/, '').trim();
+    A.committedPrefix = '';      // 1つの認識結果が完結したのでリセット
+    A.interimRaw = '';
+    A.afterCommit = false;
+    clearTimeout(A.chunkTimer);
+    A.chunkTimer = null;
+    if (!tail) return;
+
+    A.finalBuf = joinChunk(A.finalBuf, tail);
     clearTimeout(A.finalTimer);
-    const endsSentence = /[。．.！？!?…]$/.test(t);
-    const maxChars = clamp(Number(S.maxChars) || 20, 10, 60);
-    const flushMs = clamp(Number(S.flushMs) || 750, 400, 1500);
+    const endsSentence = /[。．.！？!?…]$/.test(tail);
+    const maxChars = chunkChars();
+    const flushMs = chunkPauseMs();
     if (endsSentence || A.finalBuf.length >= maxChars) { flushFinal(); return; }
-    A.finalTimer = setTimeout(flushFinal, flushMs);
+    A.finalTimer = setTimeout(() => flushFinal(), flushMs);
   }
 
-  function flushFinal() {
+  function flushFinal(opts) {
     clearTimeout(A.finalTimer);
     A.finalTimer = null;
+    clearTimeout(A.chunkTimer);
+    A.chunkTimer = null;
     const t = A.finalBuf.trim();
     A.finalBuf = '';
-    A.interimText = '';
-    const el = $('#interim');
-    if (el) el.textContent = '';
+    if (!(opts && opts.keepInterim)) {
+      A.interimText = '';
+      A.interimRaw = '';
+      A.committedPrefix = '';
+      A.afterCommit = false;
+      const el = $('#interim');
+      if (el) el.textContent = '';
+    }
     if (t) publishCaption(t);
   }
 
