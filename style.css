@@ -500,6 +500,10 @@ a{color:var(--accent-2)}
 .q-ja{margin:5px 0 0;font-size:15.5px;line-height:1.55;font-weight:650;word-break:break-word}
 .q-ja.pending{color:var(--muted);font-weight:400;font-style:italic}
 .q-ja.degraded{color:var(--warn)}
+/* 話している途中の質問（v9）：確定前でも日本語訳を先に出す */
+.q-item-live{border-color:rgba(112,168,255,.45);background:rgba(112,168,255,.09)}
+.q-live-tag{color:#9cc4ff;font-weight:700;letter-spacing:.02em}
+.q-item-live .q-ja{color:#eaf2ff}
 .q-ja-label,.q-src-label{
   display:inline-block;margin-right:6px;padding:1px 6px;border-radius:6px;
   font-size:10px;font-weight:600;letter-spacing:.02em;vertical-align:2px;

@@ -444,7 +444,9 @@
     pDisplay: 'both',                   // both | translation | original
     pFont: 1,
     pTts: true,
-    pRate: 1                            // 読み上げ速度（1 / 1.15 / 1.3）
+    pRate: 1,                           // 読み上げ速度（1 / 1.15 / 1.3）
+    qSpeak: true,                       // ゲストの質問の日本語訳を読み上げる（v9：既定ON）
+    qSpeakUserSet: false                // 本人がトグルを触ったか（触っていなければ既定ONに戻す）
   };
 
   const $  = (sel, root = document) => root.querySelector(sel);
@@ -508,6 +510,9 @@
       if (!Array.isArray(merged.previewLangs) || !merged.previewLangs.length) {
         merged.previewLangs = DEFAULTS.previewLangs.slice();
       }
+      // v9：質問の読み上げは既定ON。旧版の「既定OFF」で保存された値には引きずられない。
+      // 本人がトグルを押した記録（qSpeakUserSet）があるときだけ保存値に従う。
+      if (!merged.qSpeakUserSet) merged.qSpeak = true;
       return merged;
     } catch (e) {
       return Object.assign({}, DEFAULTS, { previewLangs: DEFAULTS.previewLangs.slice() });
@@ -564,7 +569,8 @@
     qOpen: true,
     qSeq: 0,
     questions: [],
-    qSpeak: false,        // ゲストの質問の日本語訳を読み上げる（既定OFF）
+    qLive: null,          // まだ確定していないゲストの質問（リアルタイム表示用）
+    qSpeak: true,         // ゲストの質問の日本語訳を読み上げる（既定ON）
   };
 
   const P = {
@@ -579,17 +585,29 @@
     // 質問（双方向・フローティングマイク）
     qOpen: true,
     qRec: null,
+    qGen: 0,              // 質問マイクの世代（古いインスタンスのコールバックを無効化する）
+    qQid: '',             // いま喋っている質問のID（途中経過と確定を同じIDで送る）
     qText: '',
     qSent: false,
     qListening: false,
     qErr: null,           // 直近のマイクエラー（理由表示を micHint で上書きしないため）
     qCloseTimer: null,
+    qInterimLast: '',
+    qInterimSentAt: 0,
+    qInterimTimer: null,
+    qStartedAt: 0,
+    qRestarts: 0,
     // 字幕の自動追従
     pinnedUp: false,      // 過去を読み返している（自動追従を一時停止）
     rafId: 0,
     // 表示文言（言語切替で描き直すために保持する）
     status: null,         // { kind, key }
     waitKey: ''
+  };
+
+  // 画面の消灯防止：Wake Lockが使えない端末（iPhone Safari等）用の無音・極小動画
+  const AWAKE = {
+    video: null, stream: null, playing: false, needed: false, gesture: false
   };
 
   const VOICE = {
@@ -627,9 +645,20 @@
       startVoiceWatchdog();
     }
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && S.pTts) requestWakeLock();
+      if (document.visibilityState === 'visible') {
+        requestWakeLock();
+        if (AWAKE.needed) startNoSleepVideo();
+      } else {
+        releaseWakeLock();
+      }
     });
+    // 最初のタップで、消灯防止のフォールバック（iOS）とガイド側TTSを準備する
+    ['pointerdown', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, onUserGesture, { capture: true, passive: true }));
     window.addEventListener('pagehide', releaseWakeLock);
+
+    // ガイドもゲストも、画面を開いている間は消灯させない（v9）
+    requestWakeLock();
 
     const params = new URLSearchParams(location.search);
     const room = (params.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
@@ -882,6 +911,13 @@
       case 'question':
         onGuestQuestion(rec, msg);
         break;
+      case 'qinterim':
+        onGuestQuestionInterim(rec, msg);
+        break;
+      case 'qend':
+        // ゲスト側で「結局なにも聞こえず送らない」だったときの後始末
+        if (A.qLive && String(A.qLive.id) === String(msg.id || '')) { A.qLive = null; renderQuestions(); }
+        break;
     }
   }
 
@@ -1129,6 +1165,7 @@
   /* ---------------- ゲストからの質問（双方向） ---------------- */
   function setQOpen(on, silent) {
     A.qOpen = !!on;
+    if (!A.qOpen) A.qLive = null;
     const cb = $('#qToggle');
     if (cb) cb.checked = A.qOpen;
     const lab = $('#qToggleLabel');
@@ -1143,33 +1180,103 @@
     if (!box) return;
     const badge = $('#qCount');
     if (badge) badge.textContent = String(A.questions.length);
-    if (!A.questions.length) {
+    const rows = [];
+    if (A.qLive) rows.push(questionItemHtml(liveQuestion()));
+    A.questions.slice().reverse().forEach(q => rows.push(questionItemHtml(q)));
+    if (!rows.length) {
       box.innerHTML = '<p class="empty">まだ質問はありません。ゲストの画面右下の「🎙️ 質問」から届きます。</p>';
       return;
     }
-    box.innerHTML = A.questions.slice().reverse().map(q => {
-      const L = LANG_MAP[q.lang] || LANG_MAP.en;
-      const hasTr = !!(q.tr && q.tr.text);
-      let ja, cls;
-      if (hasTr) {
-        ja = esc(q.tr.text);
-        cls = 'q-ja' + (q.tr.degraded ? ' degraded' : '');
-      } else if (q.state === 'error' || (q.tr && q.tr.failed)) {
-        ja = '日本語に訳せませんでした（原文を確認してください）';
-        cls = 'q-ja degraded';
-      } else {
-        ja = '翻訳中…';
-        cls = 'q-ja pending';
-      }
-      const label = hasTr ? '<span class="q-ja-label">🇯🇵 日本語訳</span>' : '';
-      return '<article class="q-item" data-id="' + esc(q.id) + '">' +
-        '<div class="q-head"><span class="q-lang">' + L.flag + ' ' + esc(L.ja) + '</span>' +
-        '<span class="q-time">' + timeLabel(q.ts) + '</span>' +
-        '<button class="q-done" type="button" data-id="' + esc(q.id) + '">✓ 済</button></div>' +
-        '<p class="q-text"><span class="q-src-label">原文</span>' + esc(q.text) + '</p>' +
-        '<p class="' + cls + '">' + label + ja + '</p>' +
-      '</article>';
-    }).join('');
+    box.innerHTML = rows.join('');
+  }
+
+  // 未確定の質問を、確定した質問と同じ形にそろえて描く
+  function liveQuestion() {
+    const l = A.qLive;
+    if (!l) return null;
+    return {
+      id: l.id,
+      lang: l.lang,
+      text: l.text,
+      ts: l.ts,
+      live: true,
+      state: l.ja ? 'done' : 'pending',
+      tr: l.ja ? { text: l.ja, degraded: !!l.degraded } : null
+    };
+  }
+
+  function questionItemHtml(q) {
+    if (!q) return '';
+    const L = LANG_MAP[q.lang] || LANG_MAP.en;
+    const hasTr = !!(q.tr && q.tr.text);
+    let ja, cls;
+    if (hasTr) {
+      ja = esc(q.tr.text);
+      cls = 'q-ja' + (q.tr.degraded ? ' degraded' : '');
+    } else if (q.state === 'error' || (q.tr && q.tr.failed)) {
+      ja = '日本語に訳せませんでした（原文を確認してください）';
+      cls = 'q-ja degraded';
+    } else {
+      ja = '翻訳中…';
+      cls = 'q-ja pending';
+    }
+    const label = hasTr ? '<span class="q-ja-label">🇯🇵 日本語訳</span>' : '';
+    const liveTag = q.live ? '<span class="q-live-tag">● 話しています（途中）</span>' : '';
+    return '<article class="q-item' + (q.live ? ' q-item-live' : '') + '" data-id="' + esc(q.id) + '">' +
+      '<div class="q-head"><span class="q-lang">' + L.flag + ' ' + esc(L.ja) + '</span>' + liveTag +
+      '<span class="q-time">' + timeLabel(q.ts) + '</span>' +
+      '<button class="q-done" type="button" data-id="' + esc(q.id) + '">✓ 済</button></div>' +
+      '<p class="q-text"><span class="q-src-label">原文</span>' + esc(q.text) + '</p>' +
+      '<p class="' + cls + '">' + label + ja + '</p>' +
+    '</article>';
+  }
+
+  // ゲストが話している途中の質問。日本語訳もその場で（速いGoogle公開エンドポイント優先）作る
+  let qLiveTimer = null;
+  let qLiveSeq = 0;
+
+  function onGuestQuestionInterim(rec, msg) {
+    if (!A.qOpen) return;
+    const text = String((msg && msg.text) || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+    const id = String((msg && msg.id) || '');
+    if (!text || !id) return;
+    rec.lang = normalizeLang((msg && msg.lang) || rec.lang);
+    if (!A.qLive || A.qLive.id !== id) {
+      A.qLive = { id, lang: rec.lang, text, ts: Date.now(), ja: '', trFor: '' };
+    } else {
+      A.qLive.text = text;
+      A.qLive.lang = rec.lang;
+    }
+    renderQuestions();
+    scheduleQLiveTranslate();
+  }
+
+  // 途中の質問の日本語訳。連続でAPIを叩かず、最後の1件だけを訳す（低遅延のまま）
+  function scheduleQLiveTranslate() {
+    const live = A.qLive;
+    if (!live) return;
+    if (qLiveTimer) { clearTimeout(qLiveTimer); qLiveTimer = null; }
+    const id = live.id;
+    qLiveTimer = setTimeout(() => {
+      qLiveTimer = null;
+      const cur = A.qLive;
+      if (!cur || cur.id !== id) return;
+      const text = cur.text;
+      if (!text || text.length < 2) return;
+      if (cur.trFor === text) return;
+      const seq = ++qLiveSeq;
+      translateToJa(text, cur.lang, { quiet: true, fast: true }).then(res => {
+        if (seq !== qLiveSeq) return;
+        const now = A.qLive;
+        if (!now || now.id !== id || now.text !== text) return;   // もっと新しい途中文字が来ている
+        now.trFor = text;
+        if (res && res.text) {
+          now.ja = res.text;
+          now.degraded = !!res.degraded;
+        }
+        renderQuestions();
+      }).catch(() => {});
+    }, 180);
   }
 
   function onGuestQuestion(rec, msg) {
@@ -1186,19 +1293,22 @@
     rec.lang = normalizeLang((msg && msg.lang) || rec.lang);
 
     const id = 'q' + (++A.qSeq);
-    const item = { id, guestId: String((msg && msg.id) || ''), lang: rec.lang, text, tr: null, state: 'pending', ts: now };
+    const guestId = String((msg && msg.id) || '');
+    // 途中表示していた同じ質問は、確定した本行に置き換える
+    if (A.qLive) A.qLive = null;
+    const item = { id, guestId, lang: rec.lang, text, tr: null, state: 'pending', ts: now };
     A.questions.push(item);
     if (A.questions.length > 30) A.questions.shift();
     renderQuestions();
     sendTo(rec, { t: 'qack', id: item.guestId });
     if (navigator.vibrate) { try { navigator.vibrate([28, 40, 28]); } catch (e) {} }
 
-    // ガイドが設定している翻訳エンジンで、その場で日本語に訳す
-    translateToJa(text, item.lang).then(res => {
+    // ガイドが設定している翻訳エンジンより先に、速いGoogle公開エンドポイントで日本語にする
+    translateToJa(text, item.lang, { quiet: false, fast: true }).then(res => {
       item.tr = res;
       item.state = (res && (res.failed || !res.text)) ? 'error' : 'done';
       renderQuestions();
-      // 任意：ゲストの質問を日本語で読み上げる（既定OFF）
+      // ゲストの質問を日本語で読み上げる（v9：既定ON）
       if (S.qSpeak && res && res.text) guideSpeak(res.text);
     }).catch(() => {
       item.state = 'error';
@@ -1432,7 +1542,7 @@
     return { text: t, engine: 'trial', engineName: 'お試し翻訳' };
   }
 
-  async function translateToJa(text, srcLang) {
+  async function translateToJa(text, srcLang, opts = {}) {
     const body = String(text == null ? '' : text).trim();
     if (!body) return { text: '', engine: 'none', engineName: '日本語', direct: true, empty: true };
     const declared = LANG_MAP[srcLang] ? srcLang : (srcLang === 'ja' ? 'ja' : '');
@@ -1441,6 +1551,14 @@
       return { text: body, engine: 'none', engineName: '日本語', direct: true };
     }
 
+    // 1) まずGoogleの公開エンドポイント（速い・キー不要）。ゲストの質問は速度優先。
+    //    原文の言語は自動判定（sl=auto）なので、画面の言語設定に頼らない。
+    try {
+      const fin = acceptJa(await googlePublicTranslate(body, 'auto', 'ja'), body);
+      if (fin) return fin;
+    } catch (e) { /* 次へ */ }
+
+    // 2) Googleで訳せないときだけ、設定中のAIエンジン（キーがある場合）
     const aiFrom = declared || 'auto';
     if (S.engine === 'openai' && String(S.openaiKey || '').trim()) {
       try {
@@ -1455,11 +1573,7 @@
         if (fin) return Object.assign({}, res, fin);
       } catch (e) { noteEngineError('Gemini', e, true); }
     }
-    // ゲストが実際にどの言語で話しても日本語に訳す：原文の言語は自動判定（sl=auto）
-    try {
-      const fin = acceptJa(await googlePublicTranslate(body, 'auto', 'ja'), body);
-      if (fin) return fin;
-    } catch (e) { /* 次へ */ }
+    // 3) MyMemory（遅いが安定）
     // MyMemory は sl=auto を受け付けない（'AUTO' IS AN INVALID SOURCE LANGUAGE）ので 'Autodetect' を使う
     try {
       const fin = acceptJa(await mymemoryTranslateFrom(body, 'Autodetect', 'ja'), body);
@@ -2204,6 +2318,10 @@
     if (fab) fab.classList.add('hidden');
     P.qText = '';
     P.qSent = false;
+    P.qErr = null;
+    P.qInterimLast = '';
+    P.qRestarts = 0;
+    P.qQid = newQuestionId();       // 途中経過と確定を同じIDで送る
     const live = $('#qLive');
     if (live) live.textContent = '';
     updateQaUI();
@@ -2217,6 +2335,10 @@
   }
 
   function closeQaPop() {
+    // 送らずに閉じたときは、ガイド側の「話しています（途中）」の行も片付けてもらう
+    if (!P.qSent && P.qQid && P.conn && P.conn.open) {
+      try { P.conn.send({ t: 'qend', id: P.qQid }); } catch (e) {}
+    }
     P.qSent = true;     // 閉じるときは送らない
     stopQMic(true);
     if (P.qCloseTimer) { clearTimeout(P.qCloseTimer); P.qCloseTimer = null; }
@@ -2228,11 +2350,17 @@
     const live = $('#qLive');
     if (live) live.textContent = '';
     P.qText = '';
+    P.qQid = '';
     setQHint('micHint');
   }
 
+  function newQuestionId() {
+    return 'gq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  // 質問マイク。2回目・3回目以降のAskでも、毎回あたらしいインスタンスで
+  // タップハンドラから同期的に start() する（iOS Safari / Android Chrome 両対応）。
   function startQMic() {
-    if (P.qRec) return true;
     if (P.qOpen === false) { toast(t('qClosedHint'), 2800); return false; }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
@@ -2241,6 +2369,19 @@
       return false;
     }
     const L = LANG_MAP[S.myLang] || LANG_MAP.en;
+
+    // 前回のインスタンスが残っていたら、そのコールバックを無効化して確実に畳む。
+    // （onend が来ないまま残ると 2回目の start が素通りして「言葉が反映されない」状態になる）
+    const gen = (P.qGen = (P.qGen || 0) + 1);
+    const stale = P.qRec;
+    P.qRec = null;
+    if (stale) {
+      try {
+        stale.onstart = null; stale.onresult = null; stale.onerror = null; stale.onend = null;
+        if (typeof stale.abort === 'function') stale.abort(); else stale.stop();
+      } catch (e) {}
+    }
+
     let rec;
     try { rec = new SR(); }
     catch (e) {
@@ -2254,11 +2395,18 @@
     rec.maxAlternatives = 1;
     P.qSent = false;
     P.qErr = null;
+    P.qInterimLast = '';
+    P.qStartedAt = Date.now();
+    if (!P.qQid) P.qQid = newQuestionId();
+
+    const mic = $('#qMic');
+    let began = false;      // 実際に認識が始まったか（始まらずに終わった時だけ、静かにやり直す）
 
     rec.onstart = () => {
+      if (gen !== P.qGen) return;
+      began = true;
       P.qListening = true;
-      const m = $('#qMic');
-      if (m) m.classList.add('listening');
+      if (mic) mic.classList.add('listening');
       // 未接続なら「なぜ送れないか」を出したままにする（Listening で上書きしない）
       if (!P.conn || !P.conn.open) {
         setQHint('qNoConn');
@@ -2268,21 +2416,23 @@
       }
     };
     rec.onresult = (ev) => {
+      if (gen !== P.qGen) return;
       let out = '';
       for (let i = 0; i < ev.results.length; i++) {
         out += (ev.results[i][0] && ev.results[i][0].transcript) || '';
       }
       out = out.trim();
+      if (!out) return;
       P.qText = out;
-      const live = $('#qLive');
-      if (live) live.textContent = out;
+      setQLiveText(out);
+      sendQInterim(out);          // 話している途中もガイドへ（低遅延の日本語訳）
     };
     rec.onerror = (ev) => {
+      if (gen !== P.qGen) return;
       const err = (ev && ev.error) || 'error';
       P.qListening = false;
-      P.qRec = null;
-      const m = $('#qMic');
-      if (m) m.classList.remove('listening');
+      if (P.qRec === rec) P.qRec = null;
+      if (mic) mic.classList.remove('listening');
       // aborted は stop() や iOS Safari の自動終了でも出る。静かに受け流し、
       // 聞き取れている文があればそのまま送る。
       if (err === 'aborted') {
@@ -2293,14 +2443,23 @@
       showMicError(err);
     };
     rec.onend = () => {
+      if (gen !== P.qGen) return;
       P.qListening = false;
-      P.qRec = null;
-      const m = $('#qMic');
-      if (m) m.classList.remove('listening');
+      if (P.qRec === rec) P.qRec = null;
+      if (mic) mic.classList.remove('listening');
       const hadErr = !!P.qErr;
       // 話し終わったら自動で送る（送信ボタンは無い）
       if (P.qOpen !== false && P.qText && !P.qSent) autoSendQuestion();
       else if (P.qOpen !== false && !P.qSent && !hadErr) {
+        // 端末側で「始まらないまま」終わってしまった（iOSで起きる）ときは、静かに1回だけやり直す
+        if (!began && !P.qText && Date.now() - P.qStartedAt < 700 && P.qRestarts < 1) {
+          P.qRestarts++;
+          setTimeout(() => {
+            if (gen !== P.qGen || P.qSent || P.qText) return;
+            if (!P.qRec && !$('#qaPop').classList.contains('hidden')) startQMic();
+          }, 120);
+          return;
+        }
         // 何も聞き取れなかったときも「なぜ送られないか」を出す
         setQHint(P.qText ? 'micHint' : 'micEmpty');
       }
@@ -2308,11 +2467,29 @@
 
     P.qRec = rec;
     P.qListening = true;
-    const mic = $('#qMic');
     if (mic) mic.classList.add('listening');    // 大きく点滅（パルス）
     setQHint('micListening');
     try { rec.start(); }
     catch (e) {
+      // iOS Safari は直前の stop 直後の start を弾くことがある → 一度だけ短く待って再試行
+      if (gen === P.qGen) {
+        P.qListening = false;
+        if (mic) mic.classList.remove('listening');
+        setTimeout(() => {
+          if (gen !== P.qGen) return;
+          try {
+            rec.start();
+            P.qRec = rec;
+            P.qListening = true;
+            if (mic) mic.classList.add('listening');
+            setQHint('micListening');
+            return;
+          } catch (e2) {}
+          if (P.qRec === rec) P.qRec = null;
+          showMicError(e && e.name === 'NotAllowedError' ? 'not-allowed' : 'start');
+        }, 150);
+        return true;
+      }
       P.qRec = null;
       P.qListening = false;
       if (mic) mic.classList.remove('listening');
@@ -2322,7 +2499,34 @@
     return true;
   }
 
+  // 話している途中の質問を、スロットリングしてガイドへ送る（300〜400ms間隔）
+  function sendQInterim(text) {
+    if (!P.conn || !P.conn.open) return;
+    const body = String(text || '').trim();
+    if (!body || P.qSent) return;
+    if (body === P.qInterimLast) return;
+    const gap = 340;
+    const wait = Math.max(0, gap - (Date.now() - P.qInterimSentAt));
+    const fire = () => {
+      P.qInterimTimer = null;
+      if (!P.conn || !P.conn.open || P.qSent) return;
+      const cur = String(P.qText || '').trim();
+      if (!cur || cur === P.qInterimLast) return;
+      P.qInterimLast = cur;
+      P.qInterimSentAt = Date.now();
+      try {
+        P.conn.send({ t: 'qinterim', id: P.qQid || '', lang: S.myLang || 'en', text: cur, ts: P.qInterimSentAt });
+      } catch (e) {}
+    };
+    if (!wait) fire();
+    else {
+      if (P.qInterimTimer) clearTimeout(P.qInterimTimer);
+      P.qInterimTimer = setTimeout(fire, wait);
+    }
+  }
+
   function stopQMic(cancel) {
+    if (P.qInterimTimer) { clearTimeout(P.qInterimTimer); P.qInterimTimer = null; }
     if (!P.qRec) {
       const b0 = $('#qMic');
       if (b0) b0.classList.remove('listening');
@@ -2350,7 +2554,7 @@
       setQHint('micEmpty');
       return;
     }
-    if (!sendQuestionText(text, { auto: true })) { P.qSent = true; return; }
+    if (!sendQuestionText(text, { auto: true, id: P.qQid })) { P.qSent = true; return; }
     P.qSent = true;
     const live = $('#qLive');
     if (live) live.textContent = '';
@@ -2375,7 +2579,8 @@
       toast(msg, 3600);
       return false;
     }
-    const id = 'gq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    if (P.qInterimTimer) { clearTimeout(P.qInterimTimer); P.qInterimTimer = null; }
+    const id = (opts && opts.id) || P.qQid || ('gq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
     P.conn.send({ t: 'question', id, lang: S.myLang || 'en', text: body, ts: Date.now() });
     toast(t('sent'), 2400);
     return true;
@@ -2520,10 +2725,8 @@
       rate.classList.toggle('on', speechRate() !== 1);
       rate.setAttribute('aria-label', t('rate') + ' ' + rateLabel(speechRate()));
     }
-    if (A.role === 'participant') {
-      if (S.pTts) requestWakeLock();
-      else releaseWakeLock();
-    }
+    // 消灯防止：音声ON/OFFや役割に関係なく、画面を開いている間は起きている（v9）
+    requestWakeLock();
   }
 
   /* ---------------- 字幕の描画 ---------------- */
@@ -2721,18 +2924,34 @@
     return RATES.includes(v) ? v : 1;
   }
 
-  // 音声ONの間は画面を消灯させない（対応端末だけ。失敗しても読み上げは続ける）
-  async function requestWakeLock() {
-    if (A.role !== 'participant' || !S.pTts) return;
-    if (!('wakeLock' in navigator) || !navigator.wakeLock || typeof navigator.wakeLock.request !== 'function') return;
-    if (document.visibilityState !== 'visible') return;      // 非表示中は取得できない
+  // 画面を開いて使っている間は、ガイド側もゲスト側も消灯させない（v9）。
+  // 1) まず Screen Wake Lock API（Android Chrome など）
+  // 2) それが無い／弾かれる端末（iPhone Safari 等）は、無音・極小のループ動画で代用
+  function requestWakeLock() {
+    if (document.visibilityState === 'hidden') return;
+    if (!('wakeLock' in navigator) || !navigator.wakeLock || typeof navigator.wakeLock.request !== 'function') {
+      AWAKE.needed = true;
+      startNoSleepVideo();
+      return;
+    }
     if (VOICE.wake && !VOICE.wake.released) return;
     try {
-      const lock = await navigator.wakeLock.request('screen');
-      VOICE.wake = lock;
-      if (lock && lock.addEventListener) lock.addEventListener('release', () => { VOICE.wake = null; });
+      const req = navigator.wakeLock.request('screen');
+      if (req && typeof req.then === 'function') {
+        req.then((lock) => {
+          VOICE.wake = lock;
+          if (lock && lock.addEventListener) lock.addEventListener('release', () => { VOICE.wake = null; });
+        }).catch(() => {
+          // 省電力モード・非対応などで弾かれた → 動画フォールバックへ
+          VOICE.wake = null;
+          AWAKE.needed = true;
+          startNoSleepVideo();
+        });
+      }
     } catch (e) {
       VOICE.wake = null;     // 省電力モードなどでは取得できない
+      AWAKE.needed = true;
+      startNoSleepVideo();
     }
   }
 
@@ -2740,6 +2959,74 @@
     const lock = VOICE.wake;
     VOICE.wake = null;
     if (lock && typeof lock.release === 'function') { try { lock.release(); } catch (e) {} }
+  }
+
+  // 無音・極小（2×2px, 1fps）のループ動画。音声を含まないので TTS と競合しない。
+  function ensureNoSleepVideo() {
+    if (AWAKE.video) return AWAKE.video;
+    let stream = null;
+    try {
+      const c = document.createElement('canvas');
+      c.width = 2; c.height = 2;
+      if (typeof c.captureStream === 'function') {
+        const ctx = c.getContext && c.getContext('2d');
+        if (ctx) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 2, 2); }
+        stream = c.captureStream(1);         // 1fps・静止画のままでOK（重くしない）
+      }
+    } catch (e) { stream = null; }
+    if (!stream) return null;
+    const v = document.createElement('video');
+    v.muted = true;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('aria-hidden', 'true');
+    v.playsInline = true;
+    v.loop = true;
+    v.autoplay = true;
+    v.tabIndex = -1;
+    v.style.cssText = 'position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;';
+    try { v.srcObject = stream; } catch (e) {}
+    try { document.body.appendChild(v); } catch (e) {}
+    AWAKE.stream = stream;
+    AWAKE.video = v;
+    return v;
+  }
+
+  // 動画の再生にはユーザー操作が要る端末があるので、最初のタップのときにだけ作って再生する
+  function startNoSleepVideo() {
+    if (!AWAKE.needed || AWAKE.playing) return;
+    if (!AWAKE.gesture) return;                       // タップ前には作らない
+    if (document.visibilityState === 'hidden') return;
+    const v = ensureNoSleepVideo();
+    if (!v || typeof v.play !== 'function') return;
+    try {
+      const p = v.play();
+      AWAKE.playing = true;
+      if (p && typeof p.catch === 'function') p.catch(() => { AWAKE.playing = false; });
+    } catch (e) { AWAKE.playing = false; }
+  }
+
+  // 最初のタップで：消灯防止の準備と、ガイド側TTSの解除（無音で）
+  function onUserGesture() {
+    AWAKE.gesture = true;
+    if (!(VOICE.wake && !VOICE.wake.released)) requestWakeLock();
+    if (AWAKE.needed) startNoSleepVideo();
+    warmGuideVoice();
+  }
+
+  // ガイドの質問読み上げは既定ON。タップの中で無音の発話を1つ流して音声を解除しておく
+  // （音量0なので聞こえない。iOS Safari でも最初の質問から読み上げが鳴るようにするため）
+  function warmGuideVoice() {
+    if (A.role !== 'guide' || VOICE.unlocked) return;
+    if (!('speechSynthesis' in window)) return;
+    VOICE.unlocked = true;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      u.rate = 1;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* 無音の解除は失敗しても構わない */ }
   }
 
   // Android Chrome は speechSynthesis が長時間の無音で止まることがある → 定期的に叩き起こす
@@ -3031,7 +3318,7 @@
         unlockVoice();
       } else {
         cancelSpeech();
-        releaseWakeLock();
+        requestWakeLock();      // 音声OFFでも画面は起きたまま（v9）
       }
     });
     $('#btnRate').addEventListener('click', () => {
@@ -3067,9 +3354,10 @@
     $('#qClose').addEventListener('click', closeQaPop);
     $('#qMic').addEventListener('click', toggleQMic);
 
-    // ガイド側：質問の読み上げ（任意・既定OFF）
+    // ガイド側：質問の読み上げ（v9：既定ON）
     $('#btnQSpeak').addEventListener('click', () => {
       S.qSpeak = !S.qSpeak;
+      S.qSpeakUserSet = true;      // 本人が切り替えたら、以後はその値を保存して使う
       saveSettings();
       updateQSpeak();
       if (S.qSpeak && 'speechSynthesis' in window) {
@@ -3092,6 +3380,7 @@
     $('#qList').addEventListener('click', (e) => {
       const btn = e.target.closest('.q-done');
       if (!btn) return;
+      if (A.qLive && String(A.qLive.id) === String(btn.dataset.id)) A.qLive = null;
       A.questions = A.questions.filter(q => q.id !== btn.dataset.id);
       renderQuestions();
     });
