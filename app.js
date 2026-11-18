@@ -119,6 +119,7 @@
     lastSent: '',
     lastSentAt: 0,
     listening: false,
+    micStarting: false,
     rec: null,
     micStream: null,
     transcribeOn: false,
@@ -858,14 +859,58 @@
     $('#micNote').textContent = msg || '';
   }
 
-  function startWebSpeech() {
+  // Android Chrome では SpeechRecognition 単体だと許可プロンプトが出ず、
+  // マイク初期化も通らずに not-allowed になることがある。
+  // 先に getUserMedia で権限とマイクをつないでから SpeechRecognition を始める。
+  function stopStream(stream) {
+    try {
+      if (stream && stream.getTracks) stream.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
+    } catch (e) {}
+  }
+
+  async function warmUpMic() {
+    const md = navigator.mediaDevices;
+    if (!md || typeof md.getUserMedia !== 'function') return { ok: true, skipped: true };
+    try {
+      const stream = await md.getUserMedia({ audio: true });
+      stopStream(stream);           // 権限確認だけ。音声は SpeechRecognition 側で取る
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, name: (e && e.name) || 'unknown', message: (e && e.message) || '' };
+    }
+  }
+
+  async function startWebSpeech() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       noteMic('このブラウザは Web Speech API に未対応です。「高精度API（Whisper系）」か、Android の Chrome をお使いください。');
       toast('音声認識が使えないブラウザです。設定でWhisper系に切り替えるか、下の入力欄でテストできます');
       return;
     }
+    if (A.micStarting) return;
+    A.micStarting = true;
+    try {
+      await startWebSpeechWithPreflight(SR);
+    } finally {
+      A.micStarting = false;
+    }
+  }
+
+  async function startWebSpeechWithPreflight(SR) {
     let fatal = false;
+
+    // 1) getUserMedia で権限を確実に取得し、マイクを起こしておく
+    noteMic('マイクの許可を確認しています…');
+    const warm = await warmUpMic();
+    if (!warm.ok) {
+      A.listening = false;
+      setMicUI(false);
+      noteMic('マイクを使えませんでした（error: ' + warm.name + '）'
+        + (warm.message ? '（message: ' + warm.message + '）' : '')
+        + '。Chromeのアドレスバー横の鍵アイコン（またはサイトの設定）からマイクを許可してください。');
+      toast('マイクを使えませんでした（' + warm.name + '）');
+      return;
+    }
 
     const rec = new SR();
     rec.lang = 'ja-JP';
@@ -891,12 +936,21 @@
     };
 
     rec.onerror = (ev) => {
-      const err = ev && ev.error;
-      if (err === 'not-allowed' || err === 'service-not-allowed') {
+      const err = (ev && ev.error) || 'unknown';
+      // 端末や状況で原因が違うので、エラー名を丸めずそのまま出す
+      const detail = ev && ev.message ? '（message: ' + String(ev.message).trim() + '）' : '';
+      if (err === 'not-allowed') {
         fatal = true;
         A.listening = false;
         setMicUI(false);
-        noteMic('マイクの使用が許可されていません。ブラウザのアドレスバー横の設定からマイクを許可してください（HTTPSのページが必要です）。');
+        noteMic('マイク権限が拒否されました（error: not-allowed）' + detail
+          + '。Chromeのアドレスバーから許可するか、アプリ内ブラウザの場合は「Chromeで開く」をお試しください。');
+      } else if (err === 'service-not-allowed') {
+        fatal = true;
+        A.listening = false;
+        setMicUI(false);
+        noteMic('端末の音声認識サービスが拒否されました（error: service-not-allowed）' + detail
+          + '。Chromeではなくアプリ内ブラウザで開いている場合や、端末の音声入力設定が無効な場合に起きます。右上のメニューから「Chromeで開く」か、設定で「高精度API（Whisper系）」に切り替えてください。');
       } else if (err === 'no-speech') {
         // 無音。自動再開に任せる
       } else if (err === 'network') {
@@ -918,7 +972,14 @@
     };
 
     A.rec = rec;
-    try { rec.start(); } catch (e) { noteMic('音声認識を開始できませんでした'); }
+    try {
+      rec.start();
+      noteMic('');
+    } catch (e) {
+      A.listening = false;
+      setMicUI(false);
+      noteMic('音声認識を開始できませんでした（' + ((e && e.name) || 'error') + (e && e.message ? ': ' + e.message : '') + '）');
+    }
   }
 
   function stopWebSpeech() {
