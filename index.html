@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070a12">
+<meta name="description" content="QRコードを読み取るだけで使える、受信機不要のリアルタイムAI同時通訳（プロトタイプ）">
+<title>QR同時通訳 | リアルタイムAI通訳</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c5cff'/%3E%3Ctext x='32' y='44' font-size='34' font-family='sans-serif' font-weight='bold' text-anchor='middle' fill='white'%3EQ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============ ガイド（配信）モード ============ -->
+<section id="viewGuide" class="view">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">Q</span>
+      <div class="brand-text">
+        <h1>QR同時通訳</h1>
+        <p>ガイド（配信）モード</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="enginePill" class="pill" type="button" title="翻訳エンジンの設定を開く">お試しモード</button>
+      <button id="btnSettings" class="icon-btn" type="button" aria-label="設定">⚙️</button>
+    </div>
+  </header>
+
+  <main class="guide-main">
+
+    <section class="card room-card">
+      <div class="room-head">
+        <div class="room-code-wrap">
+          <span class="label">ROOM</span>
+          <span id="roomCode" class="room-code">------</span>
+        </div>
+        <div class="room-meta">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">未開始</span>
+          <span class="count-badge" id="peerCount" title="接続中の参加者">0</span>
+        </div>
+      </div>
+
+      <div id="qrPanel" class="qr-panel">
+        <div id="qrPlaceholder" class="qr-placeholder">
+          <p class="qr-ph-icon" aria-hidden="true">📱</p>
+          <p class="qr-ph-title">参加者はQRを読み取るだけ</p>
+          <p class="qr-ph-sub">アプリのインストールもログインも不要</p>
+        </div>
+        <div id="qrBox" class="qr-box hidden"></div>
+        <p id="qrHint" class="qr-hint hidden">このQRコードを参加者に見せてください</p>
+      </div>
+
+      <button id="btnStart" class="btn primary block big" type="button">配信を開始（QRを表示）</button>
+
+      <div id="joinRow" class="join-row hidden">
+        <input id="joinUrl" class="join-url" readonly aria-label="参加用URL">
+        <button id="btnCopy" class="btn ghost" type="button">コピー</button>
+      </div>
+
+      <div id="participants" class="participants"></div>
+    </section>
+
+    <section class="card mic-card">
+      <div class="mic-row">
+        <button id="btnMic" class="mic-btn" type="button" aria-label="マイクの開始と停止">
+          <span class="mic-icon" aria-hidden="true">🎙️</span>
+          <span class="mic-ring" aria-hidden="true"></span>
+        </button>
+        <div class="mic-info">
+          <p id="micState" class="mic-state">マイク停止中</p>
+          <p id="asrMode" class="muted small">音声認識: Web Speech（ja-JP）</p>
+        </div>
+      </div>
+      <p id="interim" class="interim" aria-live="polite"></p>
+      <div id="micNote" class="mic-note"></div>
+      <div class="manual-row">
+        <textarea id="manualText" rows="2" placeholder="マイクが使えない時は、ここに日本語を入力して送信（テスト用）"></textarea>
+        <button id="btnSendText" class="btn primary" type="button">送信</button>
+      </div>
+    </section>
+
+    <section class="card live-card">
+      <div class="card-head">
+        <h2>ライブ字幕</h2>
+        <div class="card-head-actions">
+          <span id="liveCount" class="muted small">0件</span>
+          <button id="btnClear" class="btn ghost small" type="button">クリア</button>
+        </div>
+      </div>
+      <div id="guideLog" class="guide-log">
+        <p class="empty">ここに「話した日本語」と各言語の翻訳が表示されます。</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="guide-foot">
+    <a id="linkParticipant" href="#" class="link">参加者として入る</a>
+    <span class="sep">·</span>
+    <button id="btnHelp" class="link" type="button">使い方</button>
+  </footer>
+</section>
+
+<!-- ============ 参加者（受信）モード ============ -->
+<section id="viewParticipant" class="view hidden">
+  <header class="p-topbar">
+    <div class="p-room"><span class="label">ROOM</span><b id="pRoom">----</b><span id="pLangTag" class="p-langtag"></span></div>
+    <div class="p-status"><span class="dot" id="pDot"></span><span id="pStatus">接続中…</span></div>
+    <button id="btnPSettings" class="icon-btn" type="button" aria-label="設定">⚙️</button>
+  </header>
+
+  <div id="pLangPick" class="lang-pick">
+    <h2 class="lang-title">言語をえらんでください</h2>
+    <p class="lang-sub">Choose your language</p>
+    <div id="langGrid" class="lang-grid"></div>
+    <p class="lang-note">選ぶとすぐに字幕が届きます。あとから変更できます。</p>
+  </div>
+
+  <div id="pStage" class="p-stage hidden">
+    <div class="p-bar">
+      <button id="btnVoice" class="btn voice block" type="button">🔈 音声を有効にする（最初の1回だけ）</button>
+      <div class="p-bar-row">
+        <button id="btnTts" class="chip-btn on" type="button">🔊 自動読み上げ ON</button>
+        <button id="btnDisplay" class="chip-btn" type="button">訳＋原文</button>
+        <button id="btnFont" class="chip-btn" type="button">文字サイズ</button>
+      </div>
+    </div>
+
+    <div id="pCaptions" class="p-captions mode-both">
+      <div id="pWaiting" class="p-waiting">
+        <div class="wave" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p id="pWaitingText">ガイドの配信開始を待っています…</p>
+      </div>
+    </div>
+    <button id="btnJump" class="jump hidden" type="button">最新へ ↓</button>
+  </div>
+</section>
+
+<!-- ============ 設定シート ============ -->
+<div id="sheetBackdrop" class="backdrop hidden"></div>
+<div id="sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-head">
+    <h2 id="sheetTitle">設定</h2>
+    <button id="btnSheetClose" class="icon-btn" type="button" aria-label="閉じる">✕</button>
+  </div>
+  <div class="sheet-body">
+
+    <div class="sheet-section" data-mode="guide">
+      <h3>翻訳エンジン</h3>
+      <label class="radio"><input type="radio" name="engine" value="trial">
+        <span><b>お試しモード（APIキー不要）</b><small>無料の公開翻訳APIで動きます。接続・QR・読み上げのテストはこれでOK。精度は本番未満です。</small></span></label>
+      <label class="radio"><input type="radio" name="engine" value="openai">
+        <span><b>OpenAI（本番高精度）</b><small>文脈と用語集を踏まえた自然な同時通訳。APIキーが必要です。</small></span></label>
+      <label class="radio"><input type="radio" name="engine" value="gemini">
+        <span><b>Gemini（本番高精度）</b><small>Google Gemini API。APIキーが必要です。</small></span></label>
+
+      <div class="field" data-engine="openai">
+        <label for="openaiKey">OpenAI APIキー</label>
+        <input id="openaiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-...">
+        <label for="openaiModel" class="small muted">モデル</label>
+        <input id="openaiModel" type="text" spellcheck="false">
+      </div>
+
+      <div class="field" data-engine="gemini">
+        <label for="geminiKey">Gemini APIキー</label>
+        <input id="geminiKey" type="password" autocomplete="off" spellcheck="false" placeholder="AIza...">
+        <label for="geminiModel" class="small muted">モデル</label>
+        <input id="geminiModel" type="text" spellcheck="false">
+      </div>
+
+      <p class="muted small" style="margin-top:10px">キーはこの端末のブラウザ（localStorage）にだけ保存されます。</p>
+    </div>
+
+    <div class="sheet-section" data-mode="guide">
+      <h3>音声認識</h3>
+      <label class="radio"><input type="radio" name="asr" value="webspeech">
+        <span><b>Web Speech API（ブラウザ標準）</b><small>インストール不要・無料。Chrome / Edge の Android でよく動きます。</small></span></label>
+      <label class="radio"><input type="radio" name="asr" value="transcribe">
+        <span><b>高精度API（Whisper系）</b><small>OpenAIキーが必要。6秒前後の区切りで録音して送ります。専門用語に強い。</small></span></label>
+      <div class="field" data-asr="transcribe">
+        <label for="transcribeModel">音声認識モデル</label>
+        <input id="transcribeModel" type="text" spellcheck="false">
+        <label for="chunkSec" class="small muted">区切りの長さ（秒）</label>
+        <input id="chunkSec" type="number" min="3" max="15" step="1">
+      </div>
+    </div>
+
+    <div class="sheet-section" data-mode="guide">
+      <h3>固有名詞辞書</h3>
+      <p class="muted small">「金閣寺 → Kinkaku-ji」のように登録すると、翻訳プロンプトに自動で入ります。</p>
+      <div id="glossList" class="gloss-list"></div>
+      <div class="gloss-add">
+        <input id="glossJa" type="text" placeholder="日本語（大吟醸）">
+        <input id="glossTr" type="text" placeholder="訳語（Daiginjo）">
+        <button id="btnGlossAdd" class="btn ghost small" type="button">追加</button>
+      </div>
+    </div>
+
+    <div class="sheet-section" data-mode="guide">
+      <h3>待機中のプレビュー言語</h3>
+      <p class="muted small">参加者がまだいない間、ガイド画面に翻訳を出しておく言語です。</p>
+      <div id="previewLangs" class="chip-checks"></div>
+    </div>
+
+    <div class="sheet-section" data-mode="guide">
+      <h3>詳細設定（上級者向け）</h3>
+      <label for="peerHost" class="small muted">PeerJSサーバー（空欄で公式クラウド）</label>
+      <input id="peerHost" type="text" spellcheck="false" placeholder="peer.example.com">
+      <div class="field-row">
+        <div><label for="peerPort" class="small muted">ポート</label><input id="peerPort" type="text" inputmode="numeric" placeholder="443"></div>
+        <div><label for="peerPath" class="small muted">パス</label><input id="peerPath" type="text" placeholder="/"></div>
+      </div>
+      <label for="iceExtra" class="small muted" style="display:block;margin-top:10px">追加のICEサーバー（TURN）JSON</label>
+      <textarea id="iceExtra" rows="3" spellcheck="false" placeholder='[{"urls":"turn:turn.example.com:3478","username":"user","credential":"pass"}]'></textarea>
+      <p class="muted small">別々の回線（片方がモバイル回線など）でつながらない時はTURNサーバーを追加すると改善します。参加者側にも同じ設定が必要です。</p>
+    </div>
+
+    <div class="sheet-section" data-mode="participant">
+      <h3>表示</h3>
+      <div class="field">
+        <label for="pDisplay">字幕の表示</label>
+        <select id="pDisplay">
+          <option value="both">翻訳＋日本語原文</option>
+          <option value="translation">翻訳だけ（大きく）</option>
+          <option value="original">日本語原文だけ</option>
+        </select>
+        <label for="pFont" class="small muted">文字サイズ</label>
+        <input id="pFont" type="range" min="0.85" max="1.5" step="0.05">
+      </div>
+      <h3 style="margin-top:16px">言語</h3>
+      <div id="pLangGrid" class="lang-grid small"></div>
+      <p class="muted small">言語を変えると、これからの字幕がその言語になります。</p>
+    </div>
+
+    <div class="sheet-section" data-mode="participant">
+      <h3>読み上げ</h3>
+      <label class="switch-row"><span>自動読み上げ（TTS）</span><input id="pTts" type="checkbox"></label>
+      <p class="muted small">端末の音声合成を使います。音声が入っていない言語は、端末の設定から追加してください。</p>
+      <h3 style="margin-top:16px">接続の詳細</h3>
+      <label for="iceExtraP" class="small muted">追加のICEサーバー（TURN）JSON</label>
+      <textarea id="iceExtraP" rows="3" spellcheck="false" placeholder='[{"urls":"turn:turn.example.com:3478","username":"user","credential":"pass"}]'></textarea>
+      <p class="muted small">ガイド側と同じ設定を入れてください（別回線でつながらない時の対策）。</p>
+    </div>
+
+  </div>
+  <div class="sheet-foot">
+    <button id="btnSheetSave" class="btn primary block" type="button">保存して閉じる</button>
+  </div>
+</div>
+
+<!-- ============ 使い方 ============ -->
+<div id="helpSheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="sheet-head">
+    <h2 id="helpTitle">使い方（3分でテスト）</h2>
+    <button id="btnHelpClose" class="icon-btn" type="button" aria-label="閉じる">✕</button>
+  </div>
+  <div class="sheet-body">
+    <ol class="help-list">
+      <li><b>配信を開始</b>を押すと、部屋コードとQRコードが出ます。</li>
+      <li>もう1台のスマホのカメラでQRを読み取り、開いたページで<b>言語を選ぶ</b>と字幕が届きます。</li>
+      <li>この端末の<b>マイク</b>を押して話すと、日本語が字幕になり、相手の言語に翻訳されて表示・読み上げされます。</li>
+      <li>本番の精度にするには、右上の⚙️で<b>OpenAI または Gemini のAPIキー</b>を入れてください。</li>
+    </ol>
+    <p class="muted small">マイクは HTTPS のページでのみ使えます（Netlify Drop 等にアップしたURL）。2台を同じWi-Fiにつなぐと接続が安定します。マイクが使えない環境でも、下の入力欄から日本語を送ってテストできます。</p>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script src="vendor/peerjs.min.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
