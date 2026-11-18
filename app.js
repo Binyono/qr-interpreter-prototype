@@ -777,7 +777,9 @@
   }
 
   function sendHistory(rec) {
-    const items = A.history.slice(-12).map(item => ({
+    const lang = rec.lang || '';
+    const recent = A.history.slice(-12);
+    const items = recent.filter(item => !!(lang && item.tr[lang])).map(item => ({
       id: item.id,
       ja: item.ja,
       ts: item.ts,
