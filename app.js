@@ -864,58 +864,19 @@
     $('#micNote').textContent = msg || '';
   }
 
-  // Android Chrome では SpeechRecognition 単体だと許可プロンプトが出ず、
-  // マイク初期化も通らずに not-allowed になることがある。
-  // 先に getUserMedia で権限とマイクをつないでから SpeechRecognition を始める。
-  function stopStream(stream) {
-    try {
-      if (stream && stream.getTracks) stream.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
-    } catch (e) {}
-  }
-
-  async function warmUpMic() {
-    const md = navigator.mediaDevices;
-    if (!md || typeof md.getUserMedia !== 'function') return { ok: true, skipped: true };
-    try {
-      const stream = await md.getUserMedia({ audio: true });
-      stopStream(stream);           // 権限確認だけ。音声は SpeechRecognition 側で取る
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, name: (e && e.name) || 'unknown', message: (e && e.message) || '' };
-    }
-  }
-
-  async function startWebSpeech() {
+  // タップのユーザージェスチャーを切らさないため、await を挿まずに同期的に start() する。
+  // （getUserMedia を await してから start() すると、Android Chrome では
+  //  ジェスチャーの文脈が切れて、許可済みでも not-allowed で弾かれる実機報告がある）
+  function startWebSpeech() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       noteMic('このブラウザは Web Speech API に未対応です。「高精度API（Whisper系）」か、Android の Chrome をお使いください。');
       toast('音声認識が使えないブラウザです。設定でWhisper系に切り替えるか、下の入力欄でテストできます');
       return;
     }
-    if (A.micStarting) return;
+    if (A.micStarting || A.listening) return;
     A.micStarting = true;
-    try {
-      await startWebSpeechWithPreflight(SR);
-    } finally {
-      A.micStarting = false;
-    }
-  }
-
-  async function startWebSpeechWithPreflight(SR) {
     let fatal = false;
-
-    // 1) getUserMedia で権限を確実に取得し、マイクを起こしておく
-    noteMic('マイクの許可を確認しています…');
-    const warm = await warmUpMic();
-    if (!warm.ok) {
-      A.listening = false;
-      setMicUI(false);
-      noteMic('マイクを使えませんでした（error: ' + warm.name + '）'
-        + (warm.message ? '（message: ' + warm.message + '）' : '')
-        + '。Chromeのアドレスバー横の鍵アイコン（またはサイトの設定）からマイクを許可してください。');
-      toast('マイクを使えませんでした（' + warm.name + '）');
-      return;
-    }
 
     const rec = new SR();
     rec.lang = 'ja-JP';
@@ -981,12 +942,14 @@
 
     A.rec = rec;
     try {
-      rec.start();
+      rec.start();               // クリックハンドラから同期で開始（ジェスチャーを切らさない）
       noteMic('');
     } catch (e) {
       A.listening = false;
       setMicUI(false);
       noteMic('音声認識を開始できませんでした（' + ((e && e.name) || 'error') + (e && e.message ? ': ' + e.message : '') + '）');
+    } finally {
+      A.micStarting = false;
     }
   }
 
@@ -995,6 +958,9 @@
     try { if (A.rec) A.rec.stop(); } catch (e) {}
     A.rec = null;
     flushFinal();
+    A.interimRaw = '';        // 次の認識結果に持ち越さない
+    A.committedPrefix = '';
+    A.afterCommit = false;
     setMicUI(false);
   }
 
@@ -1251,9 +1217,6 @@
     A.finalBuf = '';
     if (!(opts && opts.keepInterim)) {
       A.interimText = '';
-      A.interimRaw = '';
-      A.committedPrefix = '';
-      A.afterCommit = false;
       const el = $('#interim');
       if (el) el.textContent = '';
     }
