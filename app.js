@@ -2217,6 +2217,7 @@
     $('#pStage').classList.remove('hidden');
     const fab = $('#btnQAsk');
     if (fab) fab.classList.remove('hidden');
+    highlightLang();           // 上部の言語タグも選んだ言語に合わせる
     applyGuestText();          // 選んだ言語でUI文言をそろえる
     applyParticipantLook();
     if (!S.pTts) $('#btnTts').classList.remove('on');
