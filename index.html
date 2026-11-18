@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070a12">
 <meta name="description" content="QRコードを読み取るだけで使える、受信機不要のリアルタイムAI同時通訳（プロトタイプ）">
 <title>QR同時通訳 | リアルタイムAI通訳</title>
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c5cff'/%3E%3Ctext x='32' y='44' font-size='34' font-family='sans-serif' font-weight='bold' text-anchor='middle' fill='white'%3EQ%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -144,6 +144,7 @@
         <button id="btnDisplay" class="chip-btn" type="button">訳＋原文</button>
         <button id="btnFont" class="chip-btn" type="button" data-i18n="font">文字サイズ</button>
       </div>
+      <p id="voiceHint" class="voice-hint hidden" aria-live="polite"></p>
     </div>
 
     <div id="pCaptions" class="p-captions mode-both">
@@ -165,7 +166,10 @@
   <div id="qaPop" class="qa-pop hidden" role="dialog" aria-labelledby="qaPopTitle">
     <div class="qa-pop-head">
       <span id="qaPopTitle" data-i18n="askTitle">ガイドに質問</span>
-      <button id="qClose" class="qa-pop-close" type="button" data-i18n-aria="close" aria-label="閉じる">✕</button>
+      <div class="qa-pop-tools">
+        <button id="qKb" class="qa-pop-tool" type="button" data-i18n-aria="kbToggle" aria-label="キーボードで入力" title="キーボードで入力">⌨️</button>
+        <button id="qClose" class="qa-pop-close" type="button" data-i18n-aria="close" aria-label="閉じる">✕</button>
+      </div>
     </div>
     <button id="qMic" class="qa-bigmic" type="button" data-i18n-aria="micHint" aria-label="マイク">
       <span class="qa-bigmic-ico" aria-hidden="true">🎙️</span>
@@ -174,6 +178,11 @@
     <p id="qHint" class="qa-hint" data-i18n="micHint">マイクを押して話す</p>
     <p id="qLive" class="qa-live" aria-live="polite"></p>
     <p id="qNotice" class="qa-notice hidden" data-i18n="qClosed">質問受付停止中</p>
+    <div id="qaTypeWrap" class="qa-type hidden">
+      <input id="qaTypeInput" class="qa-type-input" type="text" data-i18n-ph="typeHint" placeholder="質問を入力"
+             autocomplete="off" autocapitalize="sentences" enterkeyhint="send">
+      <button id="qaTypeSend" class="btn primary small qa-type-send" type="button" data-i18n="send">送信</button>
+    </div>
     <div class="qa-pop-actions">
       <button id="qSend" class="btn primary small" type="button" data-i18n="send">送信</button>
     </div>
@@ -326,6 +335,6 @@
 
 <script src="vendor/peerjs.min.js"></script>
 <script src="vendor/qrcode.js"></script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
