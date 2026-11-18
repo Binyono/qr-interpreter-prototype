@@ -552,7 +552,7 @@ a{color:var(--accent-2)}
 .field-row{display:flex;gap:8px;margin-top:10px}
 .field-row > div{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
 #iceExtra{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;min-height:70px}
-.sheet-body input[type=password],.sheet-body input[type=text],.sheet-body input[type=number]{
+.sheet-body input[type=password],.sheet-body input[type=text],.sheet-body input[type=number],.sheet-body input[type=url]{
   background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:14px;width:100%;min-height:44px;
 }
 .sheet-body input::placeholder{color:#5f6b85}
@@ -576,6 +576,59 @@ a{color:var(--accent-2)}
 .help-list{margin:6px 0 14px;padding-left:20px;font-size:13.5px;line-height:1.75}
 .help-list li{margin-bottom:10px}
 .help-list b{color:#fff}
+
+/* ---------- お土産（要約＋メール受け取り） ---------- */
+.card.gift-card{border-color:rgba(255,184,77,.28)}
+.btn.gift{
+  border:0;
+  background:linear-gradient(135deg,#ffb84d,#ff8a5c 60%,#ff6b9c);
+  color:#231000;font-weight:750;
+  box-shadow:0 14px 30px -18px rgba(255,138,92,.9);
+}
+.btn.gift.armed{background:linear-gradient(135deg,#ff6b6b,#ff9a5c);color:#fff}
+.gift-preview-label{margin:12px 0 6px;font-size:12px;color:var(--muted)}
+.gift-preview{
+  width:100%;min-height:150px;resize:vertical;
+  background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;
+  padding:11px 12px;font-size:12.5px;line-height:1.7;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;
+}
+.gift-tools{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+
+.gift-pop{
+  position:fixed;inset:0;z-index:70;
+  display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(4,7,14,.72);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  animation:pop-in .2s ease-out;
+}
+.gift-sheet{
+  width:min(100%,480px);max-height:calc(100dvh - 24px);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:#0e1422;border:1px solid var(--line-strong);border-radius:22px 22px 0 0;
+  padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -20px 60px -20px #000;
+}
+.gift-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gift-head h2{margin:0;font-size:16px}
+.gift-sub{margin:8px 0 10px;font-size:12.5px;line-height:1.6;color:var(--muted)}
+.gift-text{
+  margin:0;padding:12px;border-radius:12px;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);
+  font-family:inherit;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word;
+  max-height:42dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.gift-form{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.gift-form label{font-size:12.5px;color:#b9c6e4}
+#giftEmail{
+  width:100%;background:rgba(0,0,0,.4);border:1px solid var(--line-strong);border-radius:12px;
+  padding:12px 13px;font-size:15px;min-height:48px;
+}
+#giftEmail:focus{outline:none;border-color:rgba(124,92,255,.7)}
+#giftEmail.bad{border-color:var(--danger)}
+.gift-consent{margin:2px 0 4px;font-size:11px;line-height:1.55;color:var(--muted)}
+.gift-msg{margin:0;font-size:12px;line-height:1.55;min-height:1em;color:var(--muted)}
+.gift-msg.ok{color:var(--ok)}
+.gift-msg.warn{color:var(--warn)}
 
 /* ---------- toast ---------- */
 .toast{

@@ -65,7 +65,20 @@
       optBoth: 'Translation + Japanese original', optTr: 'Translation only (large)', optOrig: 'Japanese original only',
       setFontSize: 'Text size', setLang: 'Language', setLangNote: 'New captions will switch to this language.',
       setVoice: 'Speak aloud', setAutoTts: 'Read captions aloud (TTS)',
-      setVoiceNote: 'Plays from the phone speaker. The screen stays awake while sound is on.'
+      setVoiceNote: 'Plays from the phone speaker. The screen stays awake while sound is on.',
+      giftTitle: '🎁 Your tour gift',
+      giftSub: 'Here is a summary of today’s conversation. Receive it by email, or save it as text.',
+      giftCopy: 'Copy', giftDownload: 'Save as text',
+      giftEmailLabel: 'Email address',
+      giftConsent: '※We may send you recommendations and news to the email address you register.',
+      giftSend: 'Send it to my email', giftSending: 'Sending…',
+      giftSent: 'Sent. Please check your inbox.',
+      giftSentUnconfirmed: 'Sent. If the email does not arrive, use “Save as text”.',
+      giftSendFailed: 'Could not send. Please use “Save as text” to keep it.',
+      giftTestSaved: 'Saved on this device for testing (no email service is set up). Use “Save as text” to keep it.',
+      giftEmailBad: 'Please check the email address.',
+      giftNoUrl: '※Email delivery is not set up for this tour. Use “Save as text” to keep it.',
+      giftShort: 'Gift'
     },
     'zh-CN': {
       langTitle: '请选择你的语言', langSub: '点一下即可开始',
@@ -96,7 +109,20 @@
       optBoth: '译文＋日文原文', optTr: '只看译文（大字）', optOrig: '只看日文原文',
       setFontSize: '字体大小', setLang: '语言', setLangNote: '之后到达的字幕会切换成这个语言。',
       setVoice: '朗读', setAutoTts: '自动朗读字幕（TTS）',
-      setVoiceNote: '从手机扬声器播放。开启声音时屏幕不会熄灭。'
+      setVoiceNote: '从手机扬声器播放。开启声音时屏幕不会熄灭。',
+      giftTitle: '🎁 今日的参观礼物',
+      giftSub: '已把今天的对话整理好了。可以发到邮箱，也可以直接保存成文本。',
+      giftCopy: '复制', giftDownload: '保存为文本',
+      giftEmailLabel: '邮箱地址',
+      giftConsent: '※我们可能会向您登记的邮箱发送今后的推荐和资讯。',
+      giftSend: '发送到我的邮箱', giftSending: '发送中…',
+      giftSent: '已发送，请查看邮箱。',
+      giftSentUnconfirmed: '已发送。如果没收到邮件，请用“保存为文本”带走。',
+      giftSendFailed: '发送失败。请用“保存为文本”带走。',
+      giftTestSaved: '已保存在本机（测试模式，未设置发送地址）。请用“保存为文本”带走。',
+      giftEmailBad: '请检查邮箱地址的格式。',
+      giftNoUrl: '※本次行程未设置邮件发送。请用“保存为文本”带走。',
+      giftShort: '礼物'
     },
     'zh-TW': {
       langTitle: '請選擇你的語言', langSub: '點一下即可開始',
@@ -127,7 +153,20 @@
       optBoth: '譯文＋日文原文', optTr: '只看譯文（大字）', optOrig: '只看日文原文',
       setFontSize: '字體大小', setLang: '語言', setLangNote: '之後到達的字幕會切換成這個語言。',
       setVoice: '朗讀', setAutoTts: '自動朗讀字幕（TTS）',
-      setVoiceNote: '從手機喇叭播放。開啟聲音時螢幕不會熄滅。'
+      setVoiceNote: '從手機喇叭播放。開啟聲音時螢幕不會熄滅。',
+      giftTitle: '🎁 今天的參觀禮物',
+      giftSub: '已把今天的對話整理好了。可以寄到信箱，也可以直接儲存成文字。',
+      giftCopy: '複製', giftDownload: '儲存為文字',
+      giftEmailLabel: '電子郵件地址',
+      giftConsent: '※我們可能會向您登記的信箱寄送今後的推薦與資訊。',
+      giftSend: '寄到我的信箱', giftSending: '傳送中…',
+      giftSent: '已寄出，請查看信箱。',
+      giftSentUnconfirmed: '已寄出。如果沒收到信，請用「儲存為文字」帶走。',
+      giftSendFailed: '寄送失敗。請用「儲存為文字」帶走。',
+      giftTestSaved: '已存在本機（測試模式，未設定寄送網址）。請用「儲存為文字」帶走。',
+      giftEmailBad: '請檢查信箱地址的格式。',
+      giftNoUrl: '※本次行程未設定郵件寄送。請用「儲存為文字」帶走。',
+      giftShort: '禮物'
     },
     ko: {
       langTitle: '언어를 선택해 주세요', langSub: '누르면 바로 시작됩니다',
@@ -159,7 +198,20 @@
       optBoth: '번역＋일본어 원문', optTr: '번역만 (크게)', optOrig: '일본어 원문만',
       setFontSize: '글자 크기', setLang: '언어', setLangNote: '이후 자막이 이 언어로 바뀝니다.',
       setVoice: '읽어주기', setAutoTts: '자막 자동 읽기 (TTS)',
-      setVoiceNote: '휴대폰 스피커로 나옵니다. 소리가 켜져 있는 동안 화면이 꺼지지 않습니다.'
+      setVoiceNote: '휴대폰 스피커로 나옵니다. 소리가 켜져 있는 동안 화면이 꺼지지 않습니다.',
+      giftTitle: '🎁 오늘의 선물',
+      giftSub: '오늘 나눈 이야기를 정리했습니다. 메일로 받거나 텍스트로 저장할 수 있습니다.',
+      giftCopy: '복사', giftDownload: '텍스트로 저장',
+      giftEmailLabel: '이메일 주소',
+      giftConsent: '※등록하신 이메일 주소로 앞으로 추천 안내나 소식을 보내드릴 수 있습니다.',
+      giftSend: '내 메일로 받기', giftSending: '보내는 중…',
+      giftSent: '보냈습니다. 메일함을 확인해 주세요.',
+      giftSentUnconfirmed: '보냈습니다. 메일이 오지 않으면 “텍스트로 저장”으로 보관해 주세요.',
+      giftSendFailed: '보내지 못했습니다. “텍스트로 저장”으로 보관해 주세요.',
+      giftTestSaved: '테스트로 이 기기에 저장했습니다(보낼 주소 미설정). “텍스트로 저장”으로 보관해 주세요.',
+      giftEmailBad: '이메일 주소 형식을 확인해 주세요.',
+      giftNoUrl: '※이번 투어는 메일 발송이 설정되지 않았습니다. “텍스트로 저장”으로 보관해 주세요.',
+      giftShort: '선물'
     },
     es: {
       langTitle: 'Elige tu idioma', langSub: 'Toca un idioma para empezar',
@@ -191,7 +243,20 @@
       optBoth: 'Traducción + original japonés', optTr: 'Solo traducción (grande)', optOrig: 'Solo original japonés',
       setFontSize: 'Tamaño de letra', setLang: 'Idioma', setLangNote: 'Los próximos subtítulos cambiarán a este idioma.',
       setVoice: 'Lectura en voz alta', setAutoTts: 'Leer los subtítulos (TTS)',
-      setVoiceNote: 'Suena por el altavoz del teléfono. La pantalla no se apaga mientras el sonido está activo.'
+      setVoiceNote: 'Suena por el altavoz del teléfono. La pantalla no se apaga mientras el sonido está activo.',
+      giftTitle: '🎁 Tu recuerdo del tour',
+      giftSub: 'Aquí tienes un resumen de la conversación de hoy. Recíbelo por correo o guárdalo como texto.',
+      giftCopy: 'Copiar', giftDownload: 'Guardar como texto',
+      giftEmailLabel: 'Correo electrónico',
+      giftConsent: '※Es posible que enviemos recomendaciones y noticias al correo que registres.',
+      giftSend: 'Enviar a mi correo', giftSending: 'Enviando…',
+      giftSent: 'Enviado. Revisa tu correo.',
+      giftSentUnconfirmed: 'Enviado. Si el correo no llega, usa «Guardar como texto».',
+      giftSendFailed: 'No se pudo enviar. Usa «Guardar como texto» para llevártelo.',
+      giftTestSaved: 'Guardado en este dispositivo (modo prueba, sin servicio de envío). Usa «Guardar como texto».',
+      giftEmailBad: 'Revisa el formato del correo.',
+      giftNoUrl: '※Este tour no tiene envío por correo configurado. Usa «Guardar como texto».',
+      giftShort: 'Recuerdo'
     },
     fr: {
       langTitle: 'Choisissez votre langue', langSub: 'Touchez une langue pour commencer',
@@ -223,7 +288,20 @@
       optBoth: 'Traduction + original japonais', optTr: 'Traduction seule (grande)', optOrig: 'Original japonais seul',
       setFontSize: 'Taille du texte', setLang: 'Langue', setLangNote: 'Les prochains sous-titres passeront dans cette langue.',
       setVoice: 'Lecture à voix haute', setAutoTts: 'Lire les sous-titres (TTS)',
-      setVoiceNote: 'Sort par le haut-parleur du téléphone. L’écran reste allumé quand le son est actif.'
+      setVoiceNote: 'Sort par le haut-parleur du téléphone. L’écran reste allumé quand le son est actif.',
+      giftTitle: '🎁 Votre souvenir du tour',
+      giftSub: 'Voici un résumé de la conversation du jour. Recevez-le par e-mail ou enregistrez-le en texte.',
+      giftCopy: 'Copier', giftDownload: 'Enregistrer en texte',
+      giftEmailLabel: 'Adresse e-mail',
+      giftConsent: '※Nous pourrons envoyer des recommandations et des nouvelles à l’adresse e-mail que vous enregistrez.',
+      giftSend: 'Recevoir par e-mail', giftSending: 'Envoi…',
+      giftSent: 'Envoyé. Vérifiez votre boîte mail.',
+      giftSentUnconfirmed: 'Envoyé. Si l’e-mail n’arrive pas, utilisez « Enregistrer en texte ».',
+      giftSendFailed: 'Envoi impossible. Utilisez « Enregistrer en texte » pour le garder.',
+      giftTestSaved: 'Enregistré sur cet appareil (mode test, aucun envoi configuré). Utilisez « Enregistrer en texte ».',
+      giftEmailBad: 'Vérifiez le format de l’adresse e-mail.',
+      giftNoUrl: '※L’envoi par e-mail n’est pas configuré pour ce tour. Utilisez « Enregistrer en texte ».',
+      giftShort: 'Souvenir'
     },
     de: {
       langTitle: 'Wählen Sie Ihre Sprache', langSub: 'Sprache antippen und loslegen',
@@ -255,7 +333,20 @@
       optBoth: 'Übersetzung + japanisches Original', optTr: 'Nur Übersetzung (groß)', optOrig: 'Nur japanisches Original',
       setFontSize: 'Schriftgröße', setLang: 'Sprache', setLangNote: 'Neue Untertitel erscheinen in dieser Sprache.',
       setVoice: 'Vorlesen', setAutoTts: 'Untertitel vorlesen (TTS)',
-      setVoiceNote: 'Ton kommt aus dem Telefonlautsprecher. Der Bildschirm bleibt an, solange Ton aktiv ist.'
+      setVoiceNote: 'Ton kommt aus dem Telefonlautsprecher. Der Bildschirm bleibt an, solange Ton aktiv ist.',
+      giftTitle: '🎁 Deine Tour-Erinnerung',
+      giftSub: 'Hier ist eine Zusammenfassung des heutigen Gesprächs. Per E-Mail erhalten oder als Text speichern.',
+      giftCopy: 'Kopieren', giftDownload: 'Als Text speichern',
+      giftEmailLabel: 'E-Mail-Adresse',
+      giftConsent: '※An die von dir angegebene E-Mail-Adresse können wir künftig Empfehlungen und Neuigkeiten senden.',
+      giftSend: 'An meine E-Mail senden', giftSending: 'Senden…',
+      giftSent: 'Gesendet. Bitte prüfe dein Postfach.',
+      giftSentUnconfirmed: 'Gesendet. Falls die E-Mail nicht ankommt, nutze „Als Text speichern“.',
+      giftSendFailed: 'Senden fehlgeschlagen. Bitte nutze „Als Text speichern“.',
+      giftTestSaved: 'Auf diesem Gerät gespeichert (Testmodus, kein Versand eingerichtet). Nutze „Als Text speichern“.',
+      giftEmailBad: 'Bitte prüfe die E-Mail-Adresse.',
+      giftNoUrl: '※Für diese Tour ist kein E-Mail-Versand eingerichtet. Nutze „Als Text speichern“.',
+      giftShort: 'Erinnerung'
     },
     pt: {
       langTitle: 'Escolha o seu idioma', langSub: 'Toque no idioma para começar',
@@ -287,7 +378,20 @@
       optBoth: 'Tradução + original em japonês', optTr: 'Só tradução (grande)', optOrig: 'Só original em japonês',
       setFontSize: 'Tamanho do texto', setLang: 'Idioma', setLangNote: 'As próximas legendas passam a usar este idioma.',
       setVoice: 'Leitura em voz alta', setAutoTts: 'Ler as legendas (TTS)',
-      setVoiceNote: 'Sai pelo alto-falante do celular. A tela fica acesa enquanto o som está ativo.'
+      setVoiceNote: 'Sai pelo alto-falante do celular. A tela fica acesa enquanto o som está ativo.',
+      giftTitle: '🎁 Sua lembrança do tour',
+      giftSub: 'Aqui está um resumo da conversa de hoje. Receba por e-mail ou salve como texto.',
+      giftCopy: 'Copiar', giftDownload: 'Salvar como texto',
+      giftEmailLabel: 'E-mail',
+      giftConsent: '※Podemos enviar recomendações e novidades para o e-mail que você cadastrar.',
+      giftSend: 'Enviar para o meu e-mail', giftSending: 'Enviando…',
+      giftSent: 'Enviado. Confira sua caixa de entrada.',
+      giftSentUnconfirmed: 'Enviado. Se o e-mail não chegar, use “Salvar como texto”.',
+      giftSendFailed: 'Não foi possível enviar. Use “Salvar como texto”.',
+      giftTestSaved: 'Salvo neste aparelho (modo teste, sem envio configurado). Use “Salvar como texto”.',
+      giftEmailBad: 'Confira o formato do e-mail.',
+      giftNoUrl: '※Este tour não tem envio por e-mail configurado. Use “Salvar como texto”.',
+      giftShort: 'Lembrança'
     },
     it: {
       langTitle: 'Scegli la tua lingua', langSub: 'Tocca una lingua per iniziare',
@@ -319,7 +423,20 @@
       optBoth: 'Traduzione + originale giapponese', optTr: 'Solo traduzione (grande)', optOrig: 'Solo originale giapponese',
       setFontSize: 'Dimensione testo', setLang: 'Lingua', setLangNote: 'I prossimi sottotitoli useranno questa lingua.',
       setVoice: 'Lettura ad alta voce', setAutoTts: 'Leggi i sottotitoli (TTS)',
-      setVoiceNote: 'Esce dall’altoparlante del telefono. Lo schermo resta acceso con l’audio attivo.'
+      setVoiceNote: 'Esce dall’altoparlante del telefono. Lo schermo resta acceso con l’audio attivo.',
+      giftTitle: '🎁 Il tuo ricordo del tour',
+      giftSub: 'Ecco un riassunto della conversazione di oggi. Ricevilo via email o salvalo come testo.',
+      giftCopy: 'Copia', giftDownload: 'Salva come testo',
+      giftEmailLabel: 'Indirizzo email',
+      giftConsent: '※Potremo inviare consigli e novità all’indirizzo email che registri.',
+      giftSend: 'Invia alla mia email', giftSending: 'Invio…',
+      giftSent: 'Inviato. Controlla la casella.',
+      giftSentUnconfirmed: 'Inviato. Se l’email non arriva, usa «Salva come testo».',
+      giftSendFailed: 'Invio non riuscito. Usa «Salva come testo».',
+      giftTestSaved: 'Salvato su questo dispositivo (modalità test, invio non configurato). Usa «Salva come testo».',
+      giftEmailBad: 'Controlla il formato dell’indirizzo email.',
+      giftNoUrl: '※Per questo tour l’invio via email non è configurato. Usa «Salva come testo».',
+      giftShort: 'Ricordo'
     },
     th: {
       langTitle: 'เลือกภาษาของคุณ', langSub: 'แตะภาษาเพื่อเริ่ม',
@@ -351,7 +468,20 @@
       optBoth: 'คำแปล＋ต้นฉบับภาษาญี่ปุ่น', optTr: 'คำแปลเท่านั้น (ใหญ่)', optOrig: 'ต้นฉบับภาษาญี่ปุ่นเท่านั้น',
       setFontSize: 'ขนาดตัวอักษร', setLang: 'ภาษา', setLangNote: 'คำบรรยายต่อไปจะเปลี่ยนเป็นภาษานี้',
       setVoice: 'อ่านออกเสียง', setAutoTts: 'อ่านคำบรรยายอัตโนมัติ (TTS)',
-      setVoiceNote: 'ออกเสียงจากลำโพงมือถือ หน้าจอจะไม่ดับขณะเปิดเสียง'
+      setVoiceNote: 'ออกเสียงจากลำโพงมือถือ หน้าจอจะไม่ดับขณะเปิดเสียง',
+      giftTitle: '🎁 ของฝากจากทัวร์วันนี้',
+      giftSub: 'สรุปบทสนทนาวันนี้ให้แล้ว รับทางอีเมลหรือบันทึกเป็นข้อความเก็บไว้ได้เลย',
+      giftCopy: 'คัดลอก', giftDownload: 'บันทึกเป็นข้อความ',
+      giftEmailLabel: 'อีเมล',
+      giftConsent: '※เราอาจส่งคำแนะนำและข่าวสารไปยังอีเมลที่คุณลงทะเบียนไว้',
+      giftSend: 'ส่งไปยังอีเมลของฉัน', giftSending: 'กำลังส่ง…',
+      giftSent: 'ส่งแล้ว กรุณาตรวจสอบอีเมล',
+      giftSentUnconfirmed: 'ส่งแล้ว หากไม่ได้รับอีเมล กรุณาใช้ “บันทึกเป็นข้อความ”',
+      giftSendFailed: 'ส่งไม่สำเร็จ กรุณาใช้ “บันทึกเป็นข้อความ”',
+      giftTestSaved: 'บันทึกในเครื่องนี้แล้ว (โหมดทดสอบ ยังไม่ได้ตั้งค่าการส่ง) กรุณาใช้ “บันทึกเป็นข้อความ”',
+      giftEmailBad: 'กรุณาตรวจสอบรูปแบบอีเมล',
+      giftNoUrl: '※ทัวร์นี้ยังไม่ได้ตั้งค่าการส่งอีเมล กรุณาใช้ “บันทึกเป็นข้อความ”',
+      giftShort: 'ของฝาก'
     },
     vi: {
       langTitle: 'Chọn ngôn ngữ của bạn', langSub: 'Chạm một ngôn ngữ để bắt đầu',
@@ -383,7 +513,20 @@
       optBoth: 'Bản dịch + nguyên văn tiếng Nhật', optTr: 'Chỉ bản dịch (lớn)', optOrig: 'Chỉ nguyên văn tiếng Nhật',
       setFontSize: 'Cỡ chữ', setLang: 'Ngôn ngữ', setLangNote: 'Phụ đề tiếp theo sẽ chuyển sang ngôn ngữ này.',
       setVoice: 'Đọc thành tiếng', setAutoTts: 'Tự động đọc phụ đề (TTS)',
-      setVoiceNote: 'Phát ra loa điện thoại. Màn hình không tắt khi bật âm thanh.'
+      setVoiceNote: 'Phát ra loa điện thoại. Màn hình không tắt khi bật âm thanh.',
+      giftTitle: '🎁 Quà lưu niệm chuyến đi',
+      giftSub: 'Đây là bản tóm tắt cuộc trò chuyện hôm nay. Nhận qua email hoặc lưu thành văn bản.',
+      giftCopy: 'Sao chép', giftDownload: 'Lưu thành văn bản',
+      giftEmailLabel: 'Địa chỉ email',
+      giftConsent: '※Chúng tôi có thể gửi gợi ý và tin tức đến địa chỉ email bạn đăng ký.',
+      giftSend: 'Gửi đến email của tôi', giftSending: 'Đang gửi…',
+      giftSent: 'Đã gửi. Vui lòng kiểm tra hộp thư.',
+      giftSentUnconfirmed: 'Đã gửi. Nếu không nhận được email, hãy dùng “Lưu thành văn bản”.',
+      giftSendFailed: 'Không gửi được. Hãy dùng “Lưu thành văn bản”.',
+      giftTestSaved: 'Đã lưu trên máy này (chế độ thử, chưa cấu hình gửi). Hãy dùng “Lưu thành văn bản”.',
+      giftEmailBad: 'Vui lòng kiểm tra địa chỉ email.',
+      giftNoUrl: '※Chuyến này chưa cấu hình gửi email. Hãy dùng “Lưu thành văn bản”.',
+      giftShort: 'Quà'
     },
     id: {
       langTitle: 'Pilih bahasa Anda', langSub: 'Ketuk bahasa untuk mulai',
@@ -415,8 +558,39 @@
       optBoth: 'Terjemahan + asli Jepang', optTr: 'Hanya terjemahan (besar)', optOrig: 'Hanya asli Jepang',
       setFontSize: 'Ukuran huruf', setLang: 'Bahasa', setLangNote: 'Teks berikutnya akan memakai bahasa ini.',
       setVoice: 'Bacakan', setAutoTts: 'Bacakan teks otomatis (TTS)',
-      setVoiceNote: 'Keluar dari speaker ponsel. Layar tetap menyala saat suara aktif.'
+      setVoiceNote: 'Keluar dari speaker ponsel. Layar tetap menyala saat suara aktif.',
+      giftTitle: '🎁 Oleh-oleh tur hari ini',
+      giftSub: 'Ini ringkasan percakapan hari ini. Terima lewat email atau simpan sebagai teks.',
+      giftCopy: 'Salin', giftDownload: 'Simpan sebagai teks',
+      giftEmailLabel: 'Alamat email',
+      giftConsent: '※Kami dapat mengirim rekomendasi dan berita ke alamat email yang Anda daftarkan.',
+      giftSend: 'Kirim ke email saya', giftSending: 'Mengirim…',
+      giftSent: 'Terkirim. Silakan periksa email Anda.',
+      giftSentUnconfirmed: 'Terkirim. Jika email tidak datang, gunakan “Simpan sebagai teks”.',
+      giftSendFailed: 'Gagal mengirim. Gunakan “Simpan sebagai teks”.',
+      giftTestSaved: 'Disimpan di perangkat ini (mode uji, pengiriman belum diatur). Gunakan “Simpan sebagai teks”.',
+      giftEmailBad: 'Periksa format alamat email.',
+      giftNoUrl: '※Tur ini belum mengatur pengiriman email. Gunakan “Simpan sebagai teks”.',
+      giftShort: 'Oleh-oleh'
     }
+  };
+
+  /* ---------------------------------------------------------
+     0-c. お土産メモの見出し（ゲストの言語で出す）
+  --------------------------------------------------------- */
+  const GIFT_DOC = {
+    en:    { title:'🎁 Tour memo', date:'Date', lang:'Language', duration:'Duration', summaryHead:'What we talked about', qHead:'Your questions', thanks:'Thank you for joining the tour!', min:'min', noTalk:'(No conversation was recorded)' },
+    'zh-CN':{ title:'🎁 参观小结', date:'日期', lang:'语言', duration:'时长', summaryHead:'今天的要点', qHead:'你的提问', thanks:'感谢参加本次参观！', min:'分钟', noTalk:'（本次没有记录到对话）' },
+    'zh-TW':{ title:'🎁 參觀小結', date:'日期', lang:'語言', duration:'時長', summaryHead:'今天的重點', qHead:'你的提問', thanks:'感謝參加本次參觀！', min:'分鐘', noTalk:'（本次沒有記錄到對話）' },
+    ko:    { title:'🎁 투어 메모', date:'일시', lang:'언어', duration:'소요 시간', summaryHead:'오늘의 정리', qHead:'질문', thanks:'투어에 참가해 주셔서 감사합니다!', min:'분', noTalk:'(기록된 대화가 없습니다)' },
+    es:    { title:'🎁 Resumen del tour', date:'Fecha', lang:'Idioma', duration:'Duración', summaryHead:'Lo que vimos', qHead:'Tus preguntas', thanks:'¡Gracias por participar!', min:'min', noTalk:'(No se grabó ninguna conversación)' },
+    fr:    { title:'🎁 Mémo du tour', date:'Date', lang:'Langue', duration:'Durée', summaryHead:'Ce dont nous avons parlé', qHead:'Vos questions', thanks:'Merci de votre participation !', min:'min', noTalk:'(Aucune conversation enregistrée)' },
+    de:    { title:'🎁 Tour-Notiz', date:'Datum', lang:'Sprache', duration:'Dauer', summaryHead:'Das haben wir besprochen', qHead:'Ihre Fragen', thanks:'Danke für Ihre Teilnahme!', min:'Min.', noTalk:'(Kein Gespräch aufgezeichnet)' },
+    pt:    { title:'🎁 Resumo do tour', date:'Data', lang:'Idioma', duration:'Duração', summaryHead:'O que falamos', qHead:'Suas perguntas', thanks:'Obrigado por participar!', min:'min', noTalk:'(Nenhuma conversa registrada)' },
+    it:    { title:'🎁 Promemoria del tour', date:'Data', lang:'Lingua', duration:'Durata', summaryHead:'Di cosa abbiamo parlato', qHead:'Le tue domande', thanks:'Grazie per aver partecipato!', min:'min', noTalk:'(Nessuna conversazione registrata)' },
+    th:    { title:'🎁 สรุปทัวร์', date:'วันที่', lang:'ภาษา', duration:'ระยะเวลา', summaryHead:'สิ่งที่เราเล่าในวันนี้', qHead:'คำถามของคุณ', thanks:'ขอบคุณที่ร่วมทริป!', min:'นาที', noTalk:'(ยังไม่มีการบันทึกบทสนทนา)' },
+    vi:    { title:'🎁 Ghi chú tour', date:'Ngày', lang:'Ngôn ngữ', duration:'Thời lượng', summaryHead:'Nội dung chính', qHead:'Câu hỏi của bạn', thanks:'Cảm ơn bạn đã tham gia!', min:'phút', noTalk:'(Chưa ghi lại cuộc trò chuyện)' },
+    id:    { title:'🎁 Catatan tur', date:'Tanggal', lang:'Bahasa', duration:'Durasi', summaryHead:'Ringkasan', qHead:'Pertanyaan Anda', thanks:'Terima kasih telah ikut!', min:'menit', noTalk:'(Belum ada percakapan yang tercatat)' }
   };
 
   const DEFAULTS = {
@@ -439,6 +613,7 @@
     peerPort: '',
     peerPath: '',
     iceExtra: '',
+    giftUrl: '',                        // お土産メール送信URL（GAS / Webhook）
     // participant
     myLang: '',
     pDisplay: 'both',                   // both | translation | original
@@ -571,6 +746,10 @@
     questions: [],
     qLive: null,          // まだ確定していないゲストの質問（リアルタイム表示用）
     qSpeak: true,         // ゲストの質問の日本語訳を読み上げる（既定ON）
+    // お土産（会話終了時の1回だけ作る）
+    guideStartedAt: 0,
+    tourEnded: false,
+    giftPreview: null
   };
 
   const P = {
@@ -602,7 +781,10 @@
     rafId: 0,
     // 表示文言（言語切替で描き直すために保持する）
     status: null,         // { kind, key }
-    waitKey: ''
+    waitKey: '',
+    // お土産（終了時に受け取る）
+    gift: null,           // { summary, lang, url, ts }
+    giftSent: false
   };
 
   // 画面の消灯防止：Wake Lockが使えない端末（iPhone Safari等）用の無音・極小動画
@@ -757,6 +939,7 @@
   function startGuide() {
     A.role = 'guide';
     A.room = randomRoom();
+    A.guideStartedAt = Date.now();
     $('#viewGuide').classList.remove('hidden');
     $('#viewParticipant').classList.add('hidden');
     $('#roomCode').textContent = A.room;
@@ -1327,6 +1510,432 @@
       }
       const rec = targetRec || Array.from(A.conns.values()).find(r => r.lang === lang);
       if (rec) sendTo(rec, { t: 'history', items: [{ id: item.id, ja: item.ja, ts: item.ts, tr: { [lang]: item.tr[lang] } }] });
+    }
+  }
+
+  /* ---------------------------------------------------------
+     6-b. お土産（会話終了 → 要約テキスト＋メール受け取り）
+     通訳中は何もしない。終了のときに一度だけ作る（リアルタイム処理に負荷をかけない）
+  --------------------------------------------------------- */
+  const pad2 = (n) => String(n).padStart(2, '0');
+
+  function dtLabel(ts) {
+    const d = new Date(ts || Date.now());
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
+           ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  function giftDocFor(lang) { return GIFT_DOC[lang] || GIFT_DOC.en; }
+
+  // 見出しの囲みは言語で変える（日本語は【】、それ以外は ■）
+  function giftHead(lang, text) {
+    return lang === 'ja' ? '【' + text + '】' : '■ ' + text;
+  }
+
+  // 翻訳済みの字幕から、その言語の「会話の流れ」を作る（AIキーなし／AI失敗時の見やすい整理）
+  function localGiftBullets(lang) {
+    const out = [];
+    const seen = new Set();
+    for (const h of A.history) {
+      const tr = h && h.tr && h.tr[lang];
+      const text = tr && tr.text ? String(tr.text).replace(/\s+/g, ' ').trim() : '';
+      if (!text) continue;
+      if (/翻訳エンジンに接続できません/.test(text)) continue;
+      const n = norm(text);
+      if (n.length < 4) continue;                        // 「はい」「OK」だけの行は省く
+      const head = n.slice(0, 14);
+      if (seen.has(head)) continue;                      // 同じ話の繰り返しをまとめる
+      seen.add(head);
+      out.push({ ts: h.ts, text });
+    }
+    return out.slice(-18).map(r => '・[' + timeLabel(r.ts) + '] ' + r.text);
+  }
+
+  // AIで簡潔な要点を作る（APIキーがあるときだけ・終了時の1回だけ）
+  async function aiGiftBullets(lang) {
+    const useOpenAI = S.engine === 'openai' && String(S.openaiKey || '').trim();
+    const useGemini = S.engine === 'gemini' && String(S.geminiKey || '').trim();
+    if (!useOpenAI && !useGemini) return null;
+    const L = LANG_MAP[lang] || LANG_MAP.en;
+    const lines = [];
+    for (const h of A.history.slice(-40)) {
+      const tr = h && h.tr && h.tr[lang];
+      const text = tr && tr.text ? String(tr.text).replace(/\s+/g, ' ').trim() : '';
+      if (text) lines.push('- ' + text);
+    }
+    if (lines.length < 3) return null;
+    const qs = A.questions.filter(q => q && q.text && q.lang === lang).slice(-8)
+      .map(q => '- ' + String(q.text).replace(/\s+/g, ' ').trim());
+    const system = [
+      'あなたは観光ガイドのアシスタントです。以下は日本語のガイドと参加者の会話の記録です（' + L.native + 'の訳つき）。',
+      '参加者があとで読み返して嬉しい「お土産メモ」の要点を、' + L.native + 'で書いてください。',
+      '箇条書き3〜6個。1個は40文字以内。前置き・見出し・締めの言葉は書かない。',
+      '内容は記録にある事実だけ。数字・人名・地名は正確に。'
+    ].join('\n');
+    const user = '【会話の記録】\n' + lines.join('\n') + (qs.length ? '\n\n【参加者の質問】\n' + qs.join('\n') : '');
+    let out = '';
+    try {
+      out = useOpenAI ? await openaiChat(system, user) : await geminiChat(system, user);
+    } catch (e) {
+      noteEngineError(useOpenAI ? 'OpenAI' : 'Gemini', e, true);
+      return null;
+    }
+    const bullets = String(out || '').split('\n')
+      .map(s => s.trim().replace(/^[-*•・]\s*/, ''))
+      .filter(s => s.length > 1)
+      .slice(0, 8)
+      .map(s => '・' + s);
+    return bullets.length >= 2 ? bullets : null;
+  }
+
+  // 1言語分のお土産テキスト（日時・言語・会話まとめ・質問）
+  async function buildGiftSummary(lang, endTs) {
+    const code = LANG_MAP[lang] ? lang : 'en';
+    const G = giftDocFor(code);
+    const L = LANG_MAP[code] || LANG_MAP.en;
+    const end = Number(endTs) || Date.now();
+    const items = A.history.filter(h => h && h.ts);
+    const start = items.length ? items[0].ts : (A.guideStartedAt || end);
+    const mins = Math.max(1, Math.round((end - start) / 60000));
+
+    let bullets = null;
+    try { bullets = await aiGiftBullets(code); } catch (e) { bullets = null; }
+    if (!bullets || !bullets.length) bullets = localGiftBullets(code);
+
+    const qs = A.questions
+      .filter(q => q && q.text && q.lang === code && !(q.tr && q.tr.failed))
+      .slice(-8)
+      .map(q => '・[' + timeLabel(q.ts) + '] ' + String(q.text).replace(/\s+/g, ' ').trim());
+
+    const lines = [];
+    lines.push(G.title);
+    lines.push('');
+    lines.push(G.date + ': ' + dtLabel(start) + ' – ' + timeLabel(end));
+    lines.push(G.lang + ': ' + L.native + ' (' + code + ')');
+    lines.push(G.duration + ': ' + mins + ' ' + G.min);
+    lines.push('');
+    lines.push(giftHead(code, G.summaryHead));
+    if (bullets.length) lines.push.apply(lines, bullets);
+    else lines.push('・' + G.noTalk);
+    if (qs.length) {
+      lines.push('');
+      lines.push(giftHead(code, G.qHead));
+      lines.push.apply(lines, qs);
+    }
+    lines.push('');
+    lines.push('— ' + G.thanks);
+    lines.push('QR同時通訳 / QR Live Interpreter  ·  ROOM ' + (A.room || ''));
+    return lines.join('\n');
+  }
+
+  function giftFileName(ts) {
+    const d = new Date(ts || Date.now());
+    return 'qr-tour-memo-' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
+           '-' + pad2(d.getHours()) + pad2(d.getMinutes()) + '.txt';
+  }
+
+  // テキストを .txt として保存（iOS Safari でも新規タブを開かずに済む）
+  function downloadText(name, text) {
+    try {
+      if (!(window.URL && URL.createObjectURL) || typeof Blob === 'undefined') throw new Error('no blob');
+      const blob = new Blob([String(text || '')], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 4000);
+      return true;
+    } catch (e) {
+      console.warn('[gift] 保存できません', e);
+      return false;
+    }
+  }
+
+  async function copyText(text) {
+    const s = String(text || '');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(s);
+        return true;
+      }
+    } catch (e) { /* 次へ */ }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = s;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand && document.execCommand('copy');
+      ta.remove();
+      return !!ok;
+    } catch (e) { return false; }
+  }
+
+  /* ---------------- ガイド：会話を終える ---------------- */
+  let giftArmTimer = null;
+
+  function resetGiftArm() {
+    if (giftArmTimer) { clearTimeout(giftArmTimer); giftArmTimer = null; }
+    const btn = $('#btnEndTour');
+    if (btn) {
+      btn.classList.remove('armed');
+      btn.textContent = '会話を終えて、お土産まとめを送る';
+    }
+  }
+
+  // 誤タップ防止：1回目は「もう一度押すと終了」の確認だけ
+  function onEndTourClick() {
+    const btn = $('#btnEndTour');
+    if (!btn) return;
+    if (!openConns().length) {
+      toast('接続中のゲストがいません。先にQRを読んでもらいましょう');
+      return;
+    }
+    if (!btn.classList.contains('armed')) {
+      btn.classList.add('armed');
+      btn.textContent = '⚠️ もう一度押すと終了してお土産を送ります';
+      toast('もう一度押すと、会話を終えてゲストにお土産を送ります', 4200);
+      if (giftArmTimer) clearTimeout(giftArmTimer);
+      giftArmTimer = setTimeout(resetGiftArm, 6000);
+      return;
+    }
+    resetGiftArm();
+    endTour();
+  }
+
+  async function endTour() {
+    const list = openConns().filter(r => r.conn && r.conn.open);
+    const btn = $('#btnEndTour');
+    const status = $('#giftStatus');
+    if (!list.length) { toast('接続中のゲストがいません'); return; }
+    if (btn) { btn.disabled = true; btn.textContent = 'お土産を準備しています…'; }
+    if (status) status.textContent = 'お土産まとめを作っています…';
+
+    // 配信を止める（マイク・録音・未確定の文）
+    try { if (A.listening || A.rec) stopWebSpeech(); } catch (e) {}
+    try { if (A.transcribeOn) stopTranscribe(); } catch (e) {}
+    try { flushFinal(); } catch (e) {}
+    A.tourEnded = true;
+    setGuideStatus('wait', '終了しました');
+
+    const endTs = Date.now();
+    const langs = Array.from(new Set(list.map(r => r.lang || 'en')));
+    const made = {};
+    await Promise.all(langs.map(async (lang) => {
+      try { made[lang] = await buildGiftSummary(lang, endTs); }
+      catch (e) { console.warn('[gift]', e); made[lang] = ''; }
+    }));
+
+    const url = String(S.giftUrl || '').trim();
+    for (const rec of list) {
+      const lang = rec.lang || 'en';
+      sendTo(rec, {
+        t: 'tour_end',
+        lang,
+        summary: made[lang] || made[langs[0]] || '',
+        url,
+        ts: endTs,
+        room: A.room
+      });
+    }
+
+    A.giftPreview = { lang: langs[0], summary: made[langs[0]] || '', endTs };
+    renderGiftPreview();
+    if (btn) { btn.disabled = false; btn.textContent = '会話を終えて、お土産まとめを送る'; }
+    if (status) {
+      status.textContent = list.length + '人のゲストにお土産まとめを送りました（' + dtLabel(endTs) + '）' +
+        (url ? '' : '／メール送信URLは未設定：ゲストは「テキスト保存」で持ち帰れます');
+    }
+    toast(list.length + '人のゲストにお土産まとめを送りました', 4200);
+  }
+
+  function renderGiftPreview() {
+    const g = A.giftPreview;
+    const wrap = $('#giftPreviewWrap');
+    if (!wrap || !g || !g.summary) return;
+    const L = LANG_MAP[g.lang] || LANG_MAP.en;
+    const lab = $('#giftPreviewLabel');
+    if (lab) lab.textContent = 'プレビュー（ゲストの画面に出る文・' + L.flag + ' ' + L.native + '）';
+    const ta = $('#giftPreview');
+    if (ta) ta.value = g.summary;
+    wrap.classList.remove('hidden');
+  }
+
+  /* ---------------- ゲスト：終了ポップアップ＋メール受け取り ---------------- */
+  function giftTargetUrl() {
+    const g = P.gift;
+    return String((g && g.url) || S.giftUrl || '').trim();
+  }
+
+  function showGift(msg) {
+    const summary = String((msg && msg.summary) || '').trim();
+    if (!summary) return;
+    P.gift = {
+      summary,
+      lang: LANG_MAP[msg && msg.lang] ? msg.lang : (S.myLang || 'en'),
+      url: String((msg && msg.url) || ''),
+      ts: Number(msg && msg.ts) || Date.now()
+    };
+    P.giftSent = false;
+    const pre = $('#giftText');
+    if (pre) pre.textContent = summary;
+    const inp = $('#giftEmail');
+    if (inp) { inp.value = ''; inp.classList.remove('bad'); }
+    const send = $('#giftSend');
+    if (send) { send.disabled = false; send.textContent = t('giftSend'); }
+    setGiftMsg('');
+
+    // 質問ポップアップを閉じ、右下のボタンを「お土産」に切り替える
+    try { if (P.qRec) stopQMic(true); } catch (e) {}
+    const qp = $('#qaPop');
+    if (qp) qp.classList.add('hidden');
+    const fab = $('#btnQAsk');
+    if (fab) {
+      fab.classList.remove('hidden', 'off');
+      fab.dataset.gift = '1';
+      const ico = fab.querySelector('.qa-fab-ico');
+      if (ico) ico.textContent = '🎁';
+      const txt = fab.querySelector('.qa-fab-txt');
+      if (txt) txt.textContent = t('giftShort');
+    }
+    applyGiftText();
+    if (!giftTargetUrl()) setGiftMsg(t('giftNoUrl'));
+    const gp = $('#giftPop');
+    if (gp) gp.classList.remove('hidden');
+    try { cancelSpeech(); } catch (e) {}
+  }
+
+  function openGiftPop() {
+    if (!P.gift) return;
+    const gp = $('#giftPop');
+    if (gp) gp.classList.remove('hidden');
+    try { cancelSpeech(); } catch (e) {}
+  }
+
+  function closeGiftPop(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const gp = $('#giftPop');
+    if (gp) gp.classList.add('hidden');
+  }
+
+  function setGiftMsg(msg, kind) {
+    const el = $('#giftMsg');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'gift-msg' + (kind ? ' ' + kind : '');
+  }
+
+  // ポップアップ内の文言を、ゲストの言語にそろえる
+  function applyGiftText() {
+    const pop = $('#giftPop');
+    if (pop) {
+      $$('[data-i18n]', pop).forEach(el => { el.textContent = t(el.dataset.i18n); });
+      $$('[data-i18n-aria]', pop).forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+    }
+    const send = $('#giftSend');
+    if (send && !P.giftSent) send.textContent = t('giftSend');
+    const fab = $('#btnQAsk');
+    if (fab && fab.dataset.gift) {
+      const txt = fab.querySelector('.qa-fab-txt');
+      if (txt) txt.textContent = t('giftShort');
+    }
+  }
+
+  // バックエンド未設定のテスト状態でも失わないよう、端末内に残す
+  function saveTestGift(payload) {
+    try {
+      const key = 'qri.gifts.test.v1';
+      const all = JSON.parse(localStorage.getItem(key) || '[]');
+      all.push(payload);
+      while (all.length > 30) all.shift();
+      localStorage.setItem(key, JSON.stringify(all));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // GAS / Webhook へ送る。応答を読める形で送り、CORSで弾かれたら no-cors で送り直す。
+  // 二重送信になっても困らないよう、ペイロードの id で先方（GAS側）が重複を弾く。
+  async function postGift(url, payload) {
+    const body = JSON.stringify(payload);
+    try {
+      const r = await fetch(url, {
+        method: 'POST', mode: 'cors', cache: 'no-store', redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body
+      });
+      if (r && r.ok) {
+        let d = null;
+        try { d = await r.json(); } catch (e) { d = null; }
+        if (d && d.ok === false) throw new Error(d.error || 'server error');
+        return { ok: true, confirmed: true };
+      }
+      if (r && r.status) throw new Error('HTTP ' + r.status);
+    } catch (e) {
+      // 応答が読めない（CORS）だけなら、下の no-cors で送り直す
+      if (String(e && e.message || '').indexOf('server error') === 0) throw e;
+    }
+    await fetch(url, {
+      method: 'POST', mode: 'no-cors', cache: 'no-store',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body
+    });
+    return { ok: true, confirmed: false };
+  }
+
+  async function submitGift(ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    const g = P.gift;
+    if (!g) return;
+    if (P.giftSent) { setGiftMsg(t('giftSent'), 'ok'); return; }
+
+    const inp = $('#giftEmail');
+    const email = String((inp && inp.value) || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      if (inp) { inp.classList.add('bad'); try { inp.focus(); } catch (e) {} }
+      setGiftMsg(t('giftEmailBad'), 'warn');
+      return;
+    }
+    if (inp) inp.classList.remove('bad');
+
+    const payload = {
+      email,
+      lang: S.myLang || g.lang || 'en',
+      summary: g.summary,
+      timestamp: new Date().toISOString(),
+      room: A.room || '',
+      id: 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
+    };
+    const url = giftTargetUrl();
+    const send = $('#giftSend');
+    if (send) { send.disabled = true; send.textContent = t('giftSending'); }
+    setGiftMsg('');
+
+    if (!url) {
+      const saved = saveTestGift(payload);
+      P.giftSent = !!saved;
+      if (send) send.textContent = saved ? '✓' : t('giftSend');
+      if (!saved) send.disabled = false;
+      setGiftMsg(saved ? t('giftTestSaved') : t('giftSendFailed'), saved ? 'ok' : 'warn');
+      return;
+    }
+
+    try {
+      const res = await postGift(url, payload);
+      P.giftSent = true;
+      if (send) send.textContent = '✓';
+      setGiftMsg(res && res.confirmed ? t('giftSent') : t('giftSentUnconfirmed'), 'ok');
+    } catch (e) {
+      console.warn('[gift] 送信できません', e);
+      saveTestGift(payload);            // 送れなくても失わない
+      if (send) { send.disabled = false; send.textContent = t('giftSend'); }
+      setGiftMsg(t('giftSendFailed'), 'warn');
     }
   }
 
@@ -2237,6 +2846,7 @@
     applyParticipantLook();
     updateQaUI();
     setQHint(P.qListening ? 'micListening' : 'micHint');
+    applyGiftText();
 
     // iPhone のときだけ、言語選択画面に消音スイッチの一言を出す
     const iosNote = $('#pLangIosNote');
@@ -2605,6 +3215,10 @@
         if (msg.qOpen === false) { P.qOpen = false; updateQaUI(); }
         else if (msg.qOpen === true) { P.qOpen = true; updateQaUI(); }
         if (!P.joined && S.myLang) sendHello();
+        break;
+      case 'tour_end':
+        // 会話終了：お土産（要約＋メアド登録）のポップアップを出す
+        showGift(msg);
         break;
       case 'qopen':
         P.qOpen = msg.open !== false;
@@ -3351,9 +3965,45 @@
     window.addEventListener('resize', () => { if (!P.pinnedUp) scrollToLatest(true); });
 
     // 質問（双方向・フローティングマイク）
-    $('#btnQAsk').addEventListener('click', openQaPop);
+    $('#btnQAsk').addEventListener('click', () => {
+      if ($('#btnQAsk').dataset.gift) openGiftPop();
+      else openQaPop();
+    });
     $('#qClose').addEventListener('click', closeQaPop);
     $('#qMic').addEventListener('click', toggleQMic);
+
+    // お土産（ガイド：終了して送る／ゲスト：メール受け取り・保存）
+    $('#btnEndTour').addEventListener('click', onEndTourClick);
+    $('#btnGiftCopy').addEventListener('click', async () => {
+      const ta = $('#giftPreview');
+      const ok = await copyText(ta ? ta.value : '');
+      toast(ok ? 'お土産まとめをコピーしました' : 'コピーできませんでした。テキストを長押しで選択してください');
+    });
+    $('#btnGiftDownload').addEventListener('click', () => {
+      const ta = $('#giftPreview');
+      const text = ta ? ta.value : '';
+      if (!text) return;
+      const ok = downloadText(giftFileName(), text);
+      toast(ok ? 'テキストで保存しました' : '保存できませんでした（長押しでコピーしてください）');
+    });
+    $('#giftClose').addEventListener('click', closeGiftPop);
+    $('#giftForm').addEventListener('submit', submitGift);
+    $('#giftCopy').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const ok = await copyText(P.gift ? P.gift.summary : '');
+      if (ok && btn) {
+        const txt = btn.textContent;
+        btn.textContent = '✓';
+        setTimeout(() => { btn.textContent = txt; }, 1500);
+      } else {
+        toast(t('giftSendFailed'));
+      }
+    });
+    $('#giftDl').addEventListener('click', () => {
+      if (!P.gift) return;
+      const ok = downloadText(giftFileName(P.gift.ts), P.gift.summary);
+      if (!ok) setGiftMsg(t('giftSendFailed'), 'warn');
+    });
 
     // ガイド側：質問の読み上げ（v9：既定ON）
     $('#btnQSpeak').addEventListener('click', () => {
@@ -3454,6 +4104,7 @@
     $('#peerPath').value = S.peerPath || '';
     $('#iceExtra').value = S.iceExtra || '';
     $('#iceExtraP').value = S.iceExtra || '';
+    $('#giftUrl').value = S.giftUrl || '';
 
     $('#pDisplay').value = S.pDisplay || 'both';
     $('#pFont').value = S.pFont || 1;
@@ -3486,6 +4137,7 @@
     S.peerPort = $('#peerPort').value.trim();
     S.peerPath = $('#peerPath').value.trim();
     S.iceExtra = (A.role === 'guide' ? $('#iceExtra').value : $('#iceExtraP').value).trim();
+    S.giftUrl = ($('#giftUrl') ? $('#giftUrl').value : '').trim();
 
     S.pDisplay = $('#pDisplay').value;
     S.pFont = clamp($('#pFont').value, 0.85, 1.5);

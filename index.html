@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#070a12">
 <meta name="description" content="QRコードを読み取るだけで使える、受信機不要のリアルタイムAI同時通訳（プロトタイプ）">
 <title>QR同時通訳 | リアルタイムAI通訳</title>
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=10">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c5cff'/%3E%3Ctext x='32' y='44' font-size='34' font-family='sans-serif' font-weight='bold' text-anchor='middle' fill='white'%3EQ%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -111,6 +111,23 @@
       </div>
     </section>
 
+    <section class="card gift-card" id="giftCard">
+      <div class="card-head">
+        <h2>🎁 会話を終える（お土産を送る）</h2>
+      </div>
+      <p class="muted small">押すと、ゲストの画面に「今日の会話まとめ」が出ます。メールで受け取るか、テキストで保存して持ち帰れます。通訳中は何もしないので重くなりません（終了時に1回だけ作ります）。</p>
+      <button id="btnEndTour" class="btn gift block" type="button">会話を終えて、お土産まとめを送る</button>
+      <p id="giftStatus" class="muted small"></p>
+      <div id="giftPreviewWrap" class="hidden">
+        <p id="giftPreviewLabel" class="gift-preview-label"></p>
+        <textarea id="giftPreview" class="gift-preview" rows="9" readonly aria-label="お土産まとめのプレビュー"></textarea>
+        <div class="gift-tools">
+          <button id="btnGiftCopy" class="btn ghost small" type="button">コピー</button>
+          <button id="btnGiftDownload" class="btn ghost small" type="button">.txtで保存</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="guide-foot">
@@ -178,6 +195,29 @@
     <p id="qHint" class="qa-hint" data-i18n="micHint">マイクを押して話す</p>
     <p id="qLive" class="qa-live" aria-live="polite"></p>
     <p id="qNotice" class="qa-notice hidden" data-i18n="qClosed">質問受付停止中</p>
+  </div>
+
+  <!-- 会話終了後の「お土産」（要約＋メール受け取り＋テキスト保存） -->
+  <div id="giftPop" class="gift-pop hidden" role="dialog" aria-modal="true" aria-labelledby="giftTitle">
+    <div class="gift-sheet">
+      <div class="gift-head">
+        <h2 id="giftTitle" data-i18n="giftTitle">🎁 今日のお土産</h2>
+        <button id="giftClose" class="qa-pop-close" type="button" data-i18n-aria="close" aria-label="閉じる">✕</button>
+      </div>
+      <p class="gift-sub" data-i18n="giftSub">今日の会話をまとめました。メールで受け取るか、このまま保存できます。</p>
+      <pre id="giftText" class="gift-text"></pre>
+      <div class="gift-tools">
+        <button id="giftCopy" class="btn ghost small" type="button" data-i18n="giftCopy">コピー</button>
+        <button id="giftDl" class="btn ghost small" type="button" data-i18n="giftDownload">テキスト保存</button>
+      </div>
+      <form id="giftForm" class="gift-form" novalidate>
+        <label for="giftEmail" data-i18n="giftEmailLabel">メールアドレス</label>
+        <input id="giftEmail" type="email" inputmode="email" autocomplete="email" spellcheck="false" placeholder="you@example.com">
+        <p id="giftConsent" class="gift-consent" data-i18n="giftConsent">※ご登録いただいたメールアドレス宛に、今後おすすめのご案内やニュース等をお送りする場合があります。</p>
+        <button id="giftSend" class="btn primary block" type="submit" data-i18n="giftSend">メールで受け取る</button>
+        <p id="giftMsg" class="gift-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -271,6 +311,13 @@
       <p class="muted small">別々の回線（片方がモバイル回線など）でつながらない時はTURNサーバーを追加すると改善します。参加者側にも同じ設定が必要です。</p>
     </div>
 
+    <div class="sheet-section" data-mode="guide">
+      <h3>お土産メールの送り先（GAS / Webhook）</h3>
+      <label for="giftUrl" class="small muted">お土産メール送信URL（Google Apps Script の /exec URL など）</label>
+      <input id="giftUrl" type="url" spellcheck="false" autocomplete="off" placeholder="https://script.google.com/macros/s/.../exec">
+      <p class="muted small">未設定でも動きます（その場合はゲスト側でテキスト保存）。設定すると、終了時にお土産がゲストのメールへ届き、メアドがスプレッドシートに貯まります。設定は <b>GAS_EMAIL_SETUP.md</b>（5分・無料）を見てください。</p>
+    </div>
+
     <div class="sheet-section" data-mode="participant">
       <h3 data-i18n="setDisplay">表示</h3>
       <div class="field">
@@ -318,6 +365,7 @@
       <li>ゲストは画面右下の<b>🎙️ 質問</b>を押すとマイクのポップアップが開きます（マイクの許可はここで初めて聞かれます）。点滅したら話すだけで、認識した質問がその言語のまま送られ、ガイドの画面に<b>話しながら日本語訳</b>が出ます。話し終わると自動で送信されてポップアップも閉じます（送らずにやめるときは<b>✕</b>、途中で止めるときはマイクをもう一度）。ボタンや文字入力はありません。ガイドの人は<b>📩 ゲストからの質問</b>の「✓ 済」で消してください。受付はON/OFFできます。</li>
       <li>ガイド側の<b>🔊 質問を読み上げ</b>は最初からONです。ゲストの質問が日本語で届くと、そのままスピーカーから読み上げます（OFFにしたいときだけ押してください）。</li>
       <li>参加者の画面は、上部の<b>🔊 音声 ON/OFF</b> と <b>⏩ 1.0x / 1.15x / 1.3x</b> で、文字とスピーカーの音声を同時に楽しめます。<b>音声ONを押した瞬間に確認音声が鳴る</b>ので、音が出るかどうかその場で分かります（音が出ないときはマナーモード解除と音量を。iPhoneは消音スイッチで無音になります）。</li>
+      <li>会話が終わったら、ガイド画面の下の<b>🎁 会話を終えて、お土産まとめを送る</b>を押してください（誤タップ防止で2回押し）。ゲストの画面に「今日の会話まとめ」が出て、メールで受け取るか、テキストで保存して持ち帰れます。メール送信を使うには、⚙️設定で<b>お土産メール送信URL</b>（Google Apps Script）を入れてください（<b>GAS_EMAIL_SETUP.md</b>・5分・無料）。</li>
       <li>本番の精度にするには、右上の⚙️で<b>OpenAI または Gemini のAPIキー</b>を入れてください。</li>
     </ol>
     <p class="muted small">マイクは HTTPS のページでのみ使えます（Netlify Drop 等にアップしたURL）。2台を同じWi-Fiにつなぐと接続が安定します。マイクが使えない環境でも、下の入力欄から日本語を送ってテストできます。</p>
@@ -328,6 +376,6 @@
 
 <script src="vendor/peerjs.min.js"></script>
 <script src="vendor/qrcode.js"></script>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>
